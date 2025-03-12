@@ -94,17 +94,21 @@ jobs:
   monitor_grafana:
     name: Monitor Grafana
     runs-on: k8s-istio
-    needs: verify_deployment
+    needs: deploy_bookinfo  # Runs after deployment
     steps:
       - name: Check Grafana URL
         run: |
           GRAFANA_URL="http://${MINIKUBE_IP}:3000"
           echo "Checking Grafana URL: $GRAFANA_URL"
+  
+      - name: Wait for Pods to be Ready
+        run: |
+          kubectl wait --for=condition=ready pod --all --timeout=120s
 
   monitor_prometheus:
     name: Monitor Prometheus
     runs-on: k8s-istio
-    needs: verify_deployment
+    needs: deploy_bookinfo  # Runs after deployment
     steps:
       - name: Check Prometheus URL
         run: |
