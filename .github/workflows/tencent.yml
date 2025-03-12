@@ -191,6 +191,7 @@ jobs:
   cleanup:
     name: Cleanup Resources
     runs-on: k8s-istio
+    needs: [notify, setup-minikube]
     if: always()
     steps:
       - name: Delete Minikube Cluster
