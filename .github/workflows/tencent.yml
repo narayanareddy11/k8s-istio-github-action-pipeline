@@ -18,8 +18,8 @@ jobs:
           if ! minikube status; then
             echo "Starting Minikube..."
             #minikube delete
-            minikube start --cpus=4 --memory=8192 --kubernetes-version=v1.30.0 --driver=virtualbox
-
+            #minikube start --cpus=4 --memory=8192 --kubernetes-version=v1.30.0 --driver=virtualbox
+            minikube start --cpus=4 --memory=8192 --disk-size=50g --kubernetes-version=v1.28.3 --driver=virtualbox
             #minikube start 
           else
             echo "Minikube is already running."
