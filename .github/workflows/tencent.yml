@@ -1,4 +1,4 @@
-name: BookInfo CI/CD Pipeline
+name: Simple CI/CD Pipeline
 
 on:
   push:
@@ -6,125 +6,58 @@ on:
       - main
 
 jobs:
-  setup-infra:
+  build-1:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: Echo in Build-1
+        run: echo "Build-1 is running"
 
-      - name: Start Minikube
-        run: |
-          if ! minikube status; then
-            echo "Starting Minikube..."
-            minikube start
-          else
-            echo "Minikube is already running."
-          fi
-
-      - name: Install Istio
-        run: |
-          curl -L https://istio.io/downloadIstio | sh -
-          cd istio-*/
-          export PATH=$PWD/bin:$PATH
-          istioctl install --set profile=demo -y
-          kubectl label namespace default istio-injection=enabled
-
-      - name: Deploy BookInfo Application
-        run: |
-          kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.17/samples/bookinfo/platform/kube/bookinfo.yaml
-          kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.17/samples/bookinfo/networking/bookinfo-gateway.yaml
-          kubectl rollout status deployment/productpage-v1 --timeout=120s
-
-      - name: Get Minikube IP
-        run: echo "MINIKUBE_IP=$(minikube ip)" >> $GITHUB_ENV
-
-  monitor-prometheus:
-    needs: setup-infra
+  build-2:
     runs-on: ubuntu-latest
     steps:
-      - name: Check Prometheus URL
-        run: |
-          PROMETHEUS_URL="http://${MINIKUBE_IP}:9090"
-          for i in {1..5}; do
-            if curl -s --head --fail "$PROMETHEUS_URL"; then
-              echo "Prometheus is accessible."
-              exit 0
-            fi
-            sleep 10
-          done
-          echo "Prometheus is not accessible!"
-          exit 1
+      - name: Echo in Build-2
+        run: echo "Build-2 is running"
 
-  monitor-grafana:
-    needs: setup-infra
+  build-3:
     runs-on: ubuntu-latest
     steps:
-      - name: Check Grafana URL
-        run: |
-          GRAFANA_URL="http://${MINIKUBE_IP}:3000"
-          for i in {1..5}; do
-            if curl -s --head --fail "$GRAFANA_URL"; then
-              echo "Grafana is accessible."
-              exit 0
-            fi
-            sleep 10
-          done
-          echo "Grafana is not accessible!"
-          exit 1
+      - name: Echo in Build-3
+        run: echo "Build-3 is running"
 
-  monitor-kiali:
-    needs: setup-infra
+  integration-1:
+    needs: build-1
     runs-on: ubuntu-latest
     steps:
-      - name: Check Kiali URL
-        run: |
-          KIALI_URL="http://${MINIKUBE_IP}:20001"
-          for i in {1..5}; do
-            if curl -s --head --fail "$KIALI_URL"; then
-              echo "Kiali is accessible."
-              exit 0
-            fi
-            sleep 10
-          done
-          echo "Kiali is not accessible!"
-          exit 1
+      - name: Echo in Integration-1
+        run: echo "Integration-1 is running"
 
-  trivy-scan:
-    needs: setup-infra
+  integration-2:
+    needs: build-2
     runs-on: ubuntu-latest
     steps:
-      - name: Install Trivy
-        run: |
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+      - name: Echo in Integration-2
+        run: echo "Integration-2 is running"
 
-      - name: Trivy Security Scan
-        run: |
-          trivy k8s cluster minikube
-
-  check-deployment-status:
-    needs: [monitor-prometheus, monitor-grafana, monitor-kiali, trivy-scan]
+  lint:
+    needs: [build-2, build-3]
     runs-on: ubuntu-latest
     steps:
-      - name: Check Gateway Status
-        run: |
-          kubectl get gateway -n istio-system
-          if [ $? -ne 0 ]; then
-            echo "Gateway deployment failed!"
-            exit 1
-          fi
-          echo "Gateway is successfully deployed."
+      - name: Echo in Lint
+        run: echo "Linting is running"
 
-      - name: Check BookInfo App Deployment
-        run: |
-          kubectl get pods -n default
-          kubectl rollout status deployment/details-v1 --timeout=120s
-          kubectl rollout status deployment/reviews-v1 --timeout=120s
-          kubectl rollout status deployment/ratings-v1 --timeout=120s
-          echo "BookInfo app deployed successfully!"
+  unit-test:
+    needs: build-3
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test: [1, 2, 3]
+    steps:
+      - name: Echo in Unit Test
+        run: echo "Unit Test ${{ matrix.test }} is running"
 
   deploy:
-    needs: check-deployment-status
+    needs: [integration-1, integration-2, lint, unit-test]
     runs-on: ubuntu-latest
     steps:
-      - name: Final Echo
-        run: echo "🎉 Deployment completed successfully!"
+      - name: Echo in Deploy
+        run: echo "Deployment is running"
