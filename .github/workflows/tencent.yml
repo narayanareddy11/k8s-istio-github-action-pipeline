@@ -21,14 +21,17 @@ jobs:
           else
             echo "Minikube is already running."
           fi
+
   Minikube_IP:
     runs-on: k8s-istio
+    needs: setup-minikube
     steps:
       - name: Get Minikube IP
         run: echo "MINIKUBE_IP=$(minikube ip)" >> $GITHUB_ENV
 
   Install_Istio:
     runs-on: k8s-istio
+    needs: setup-minikube
     steps:
       - name: Install Istio
         run: |
@@ -36,8 +39,10 @@ jobs:
           cd istio-1.25.0
           export PATH=$PWD/bin:$PATH
           istioctl install --set profile=demo -y
+
   Deploy_BookInfo:
     runs-on: k8s-istio
+    needs: setup-minikube
     steps:
       - name: Deploy BookInfo App
         run: |
@@ -137,10 +142,41 @@ jobs:
           kubectl get virtualservice -n default
           kubectl get pods -n default
 
+  run-tests:
+    name: Run Tests
+    runs-on: k8s-istio
+    needs: Deploy_BookInfo
+    steps:
+      - name: Run Integration Tests
+        run: |
+          # Add commands to run your tests here
+          echo "Running integration tests..."
+
+  notify:
+    name: Notify Team
+    runs-on: k8s-istio
+    needs: [monitor-grafana, monitor-prometheus, monitor-kiali, infra-check, security-scan, deployment-status, run-tests]
+    steps:
+      - name: Send Slack Notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  cleanup:
+    name: Cleanup Resources
+    runs-on: k8s-istio
+    if: always()
+    steps:
+      - name: Delete Minikube Cluster
+        run: minikube delete
+
   deploy:
     name: Final Deployment Step
     runs-on: k8s-istio
-    needs: [monitor-grafana, monitor-prometheus, monitor-kiali, infra-check, security-scan, deployment-status]
+    needs: [notify, cleanup]
     steps:
       - name: Deployment Completed
         run: echo "BookInfo Deployment Successfully Completed!"
