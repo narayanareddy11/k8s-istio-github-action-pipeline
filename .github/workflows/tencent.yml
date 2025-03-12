@@ -33,7 +33,7 @@ jobs:
 
   install_istio:
     name: check Istio
-    runs-on: k8s-istio-istio
+    runs-on: k8s-istio
     needs: setup  # Runs after setup job
     steps:
       - name: Check Istio Installation
@@ -58,7 +58,7 @@ jobs:
 
   deploy_bookinfo:
     name: Deploy BookInfo App
-    runs-on: k8s-istio-istio
+    runs-on: k8s-istio
     needs: install_istio  # Runs after Istio is installed
 
     steps:
@@ -73,7 +73,7 @@ jobs:
 
   verify_deployment:
     name: Verify Deployment
-    runs-on: k8s-istio-istio
+    runs-on: k8s-istio
     needs: deploy_bookinfo  # Runs after deployment
 
     steps:
