@@ -18,20 +18,14 @@ jobs:
 
       - name: Start Minikube
         run: |
-          minikube status || minikube start
+          minikube status    
+          Gith#|| minikube start
 
       - name: Set up kubectl
         run: |
           kubectl cluster-info
           kubectl get nodes
 
-      - name: Install Istio
-        run: |
-          curl -L https://istio.io/downloadIstio | sh -
-          cd istio-*/
-          export PATH=$PWD/bin:$PATH
-          istioctl install --set profile=demo -y
-          kubectl label namespace default istio-injection=enabled
 
       - name: Deploy BookInfo App
         run: |
