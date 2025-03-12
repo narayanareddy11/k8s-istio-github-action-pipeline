@@ -1,18 +1,14 @@
-name: BookInfo Deployment with Istio
+name: BookInfo CI/CD with Istio
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
-  setup:
-    name: Setup Minikube & Kubernetes
-    runs-on: k8s-istio
-
+  setup-minikube:
+    name: Setup Minikube & Istio
+    runs-on: k8s
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -26,91 +22,118 @@ jobs:
             echo "Minikube is already running."
           fi
 
-      - name: Set up kubectl
-        run: |
-          kubectl cluster-info
-          kubectl get nodes
+      - name: Get Minikube IP
+        run: echo "MINIKUBE_IP=$(minikube ip)" >> $GITHUB_ENV
 
-  install_istio:
-    name: check Istio
-    runs-on: k8s-istio
-    needs: setup  # Runs after setup job
-    steps:
-      - name: Check Istio Installation
-        id: istio_check
+      - name: Install Istio
         run: |
-          if kubectl get namespace istio-system &>/dev/null; then
-            echo "Istio is already installed."
-            echo "installed=true" >> $GITHUB_ENV
-          else
-            echo "Istio is not installed."
-            echo "installed=false" >> $GITHUB_ENV
-          fi
-
-      - name: Install Istio (if not installed)
-        if: env.installed == 'false'
-        run: |
-          curl -L https://istio.io/downloadIstio | sh -
-          cd istio-*/
+          curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.17.0 sh -
+          cd istio-1.17.0
           export PATH=$PWD/bin:$PATH
           istioctl install --set profile=demo -y
-          kubectl label namespace default istio-injection=enabled
 
-  deploy_bookinfo:
-    name: Deploy BookInfo App
-    runs-on: k8s-istio
-    needs: install_istio  # Runs after Istio is installed
+      - name: Deploy BookInfo App
+        run: |
+          kubectl apply -f istio-1.17.0/samples/bookinfo/platform/kube/bookinfo.yaml
+          kubectl apply -f istio-1.17.0/samples/bookinfo/networking/bookinfo-gateway.yaml
+          kubectl rollout status deployment/productpage-v1 -n default --timeout=120s
 
+  check-istio:
+    name: Check Istio Status
+    runs-on: k8s
+    needs: setup-minikube
     steps:
-      - name: Deploy BookInfo Application
-        run: |
-          kubectl apply -f platform/kube/bookinfo.yaml
-          kubectl apply -f networking/bookinfo-gateway.yaml
+      - name: Verify Istio Installation
+        run: istioctl verify-install
 
-      - name: Wait for Pods to be Ready
-        run: |
-          kubectl wait --for=condition=ready pod --all --timeout=120s
-
-  verify_deployment:
-    name: Verify Deployment
-    runs-on: k8s-istio
-    needs: deploy_bookinfo  # Runs after deployment
-
+  deploy-monitoring:
+    name: Deploy Monitoring (Grafana, Prometheus, Kiali)
+    runs-on: k8s
+    needs: setup-minikube
     steps:
-      - name: Check Running Services
+      - name: Deploy Monitoring Services
         run: |
-          kubectl get pods -n default
-          kubectl get svc -n default
-          kubectl get gateways -n default
+          kubectl apply -f istio-1.17.0/samples/addons/grafana.yaml
+          kubectl apply -f istio-1.17.0/samples/addons/prometheus.yaml
+          kubectl apply -f istio-1.17.0/samples/addons/kiali.yaml
+          kubectl rollout status deployment/grafana -n istio-system --timeout=120s
+          kubectl rollout status deployment/prometheus -n istio-system --timeout=120s
+          kubectl rollout status deployment/kiali -n istio-system --timeout=120s
 
-      - name: Capture Logs on Failure
-        if: failure()
-        run: |
-          kubectl get events --sort-by=.metadata.creationTimestamp > logs.txt
-          kubectl logs -l app=productpage > productpage-logs.txt
-          cat logs.txt
-          cat productpage-logs.txt
-
-  monitor_grafana:
+  monitor-grafana:
     name: Monitor Grafana
-    runs-on: k8s-istio
-    needs: deploy_bookinfo  # Runs after deployment
+    runs-on: k8s
+    needs: deploy-monitoring
     steps:
       - name: Check Grafana URL
         run: |
           GRAFANA_URL="http://${MINIKUBE_IP}:3000"
-          echo "Checking Grafana URL: $GRAFANA_URL"
-  
-      - name: Wait for Pods to be Ready
-        run: |
-          kubectl wait --for=condition=ready pod --all --timeout=120s
+          echo "Checking Grafana: $GRAFANA_URL"
+          curl -s --head --fail "$GRAFANA_URL" || exit 1
 
-  monitor_prometheus:
+  monitor-prometheus:
     name: Monitor Prometheus
-    runs-on: k8s-istio
-    needs: deploy_bookinfo  # Runs after deployment
+    runs-on: k8s
+    needs: deploy-monitoring
     steps:
       - name: Check Prometheus URL
         run: |
           PROMETHEUS_URL="http://${MINIKUBE_IP}:9090"
-          echo "Checking Prometheus URL: $PROMETHEUS_URL"
+          echo "Checking Prometheus: $PROMETHEUS_URL"
+          curl -s --head --fail "$PROMETHEUS_URL" || exit 1
+
+  monitor-kiali:
+    name: Monitor Kiali
+    runs-on: k8s
+    needs: deploy-monitoring
+    steps:
+      - name: Check Kiali URL
+        run: |
+          KIALI_URL="http://${MINIKUBE_IP}:20001"
+          echo "Checking Kiali: $KIALI_URL"
+          curl -s --head --fail "$KIALI_URL" || exit 1
+
+  infra-check:
+    name: Infrastructure Check
+    runs-on: k8s
+    needs: setup-minikube
+    steps:
+      - name: Check Nodes & Pods
+        run: |
+          kubectl get nodes
+          kubectl get pods -A
+
+  security-scan:
+    name: Trivy Security Scanning
+    runs-on: ubuntu-latest
+    needs: setup-minikube
+    steps:
+      - name: Install Trivy
+        run: |
+          sudo apt-get install wget
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.44.1/trivy_0.44.1_Linux-64bit.deb
+          sudo dpkg -i trivy_0.44.1_Linux-64bit.deb
+
+      - name: Scan BookInfo Images
+        run: |
+          trivy image docker.io/istio/examples-bookinfo-productpage-v1:1.17.0
+          trivy image docker.io/istio/examples-bookinfo-reviews-v1:1.17.0
+
+  deployment-status:
+    name: Check Deployment Status
+    runs-on: k8s
+    needs: setup-minikube
+    steps:
+      - name: Verify Gateway & BookInfo Deployment
+        run: |
+          kubectl get gateway -n default
+          kubectl get virtualservice -n default
+          kubectl get pods -n default
+
+  deploy:
+    name: Final Deployment Step
+    runs-on: k8s
+    needs: [monitor-grafana, monitor-prometheus, monitor-kiali, infra-check, security-scan, deployment-status]
+    steps:
+      - name: Deployment Completed
+        run: echo "BookInfo Deployment Successfully Completed!"
