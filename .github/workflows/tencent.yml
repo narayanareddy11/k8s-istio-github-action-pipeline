@@ -9,6 +9,7 @@ jobs:
   setup-minikube:
     name: Setup Minikube & Istio
     runs-on: k8s-istio
+    needs: [cleanup]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -191,7 +192,7 @@ jobs:
   cleanup:
     name: Cleanup Resources
     runs-on: k8s-istio
-    needs: [notify, setup-minikube]
+
     if: always()
     steps:
       - name: Delete Minikube Cluster
