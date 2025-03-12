@@ -17,7 +17,10 @@ jobs:
         run: |
           if ! minikube status; then
             echo "Starting Minikube..."
-            minikube start
+            #minikube delete
+            minikube start --cpus=4 --memory=8192 --kubernetes-version=v1.30.0 --driver=virtualbox
+
+            #minikube start 
           else
             echo "Minikube is already running."
           fi
@@ -39,6 +42,17 @@ jobs:
           cd istio-1.25.0
           export PATH=$PWD/bin:$PATH
           istioctl install --set profile=demo -y
+          - name: Check if Istio is Installed
+            run: |
+              if istioctl version --remote; then
+            echo "Istio is already installed."
+              else
+            echo "Istio is not installed. Installing Istio..."
+            curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.25.0 sh -
+            cd istio-1.25.0
+            export PATH=$PWD/bin:$PATH
+            istioctl install --set profile=demo -y
+              fi
 
   Deploy_BookInfo:
     runs-on: k8s-istio
@@ -110,10 +124,16 @@ jobs:
     runs-on: k8s-istio
     needs: setup-minikube
     steps:
-      - name: Check Nodes & Pods
+      - name: Check Infrastructure
         run: |
           kubectl get nodes
           kubectl get pods -A
+          echo "Kubernetes Version:"
+          kubectl version --short
+          echo "Minikube Version:"
+          minikube version
+          echo "Istioctl Version:"
+          istioctl version
 
   security-scan:
     name: Trivy Security Scanning
@@ -157,13 +177,16 @@ jobs:
     runs-on: k8s-istio
     needs: [monitor-grafana, monitor-prometheus, monitor-kiali, infra-check, security-scan, deployment-status, run-tests]
     steps:
-      - name: Send Slack Notification
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Send Notification
+        run: |
+          echo "Job Status: ${{ job.status }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Commit Message: ${{ github.event.head_commit.message }}"
+          echo "Commit Author: ${{ github.event.head_commit.author.name }}"
+          echo "Workflow: ${{ github.workflow }}"
+          echo "Job: ${{ github.job }}"
+          echo "Event Name: ${{ github.event_name }}"
+          echo "Ref: ${{ github.ref }}"
 
   cleanup:
     name: Cleanup Resources
@@ -171,12 +194,19 @@ jobs:
     if: always()
     steps:
       - name: Delete Minikube Cluster
-        run: minikube delete
+        run: 
+          kubectl delete -f istio-1.25.0/samples/bookinfo/platform/kube/bookinfo.yaml
+          kubectl delete -f istio-1.25.0/samples/bookinfo/networking/bookinfo-gateway.yaml
+          kubectl delete all --all --namespace=default
 
   deploy:
     name: Final Deployment Step
     runs-on: k8s-istio
     needs: [notify, cleanup]
     steps:
-      - name: Deployment Completed
-        run: echo "BookInfo Deployment Successfully Completed!"
+      - name: Display Deployment URLs
+        run: |
+          echo "BookInfo Deployment Successfully Completed!"
+          echo "Grafana URL: http://${MINIKUBE_IP}:3000"
+          echo "Prometheus URL: http://${MINIKUBE_IP}:9090"
+          echo "Kiali URL: http://${MINIKUBE_IP}:20001"
