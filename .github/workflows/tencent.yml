@@ -64,8 +64,8 @@ jobs:
     steps:
       - name: Deploy BookInfo Application
         run: |
-          kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml
-          kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml
+          kubectl apply -f platform/kube/bookinfo.yaml
+          kubectl apply -f networking/bookinfo-gateway.yaml
 
       - name: Wait for Pods to be Ready
         run: |
@@ -94,7 +94,7 @@ jobs:
   monitor_grafana:
     name: Monitor Grafana
     runs-on: k8s-istio
-    needs: setup
+    needs: Verify Deployment
     steps:
       - name: Check Grafana URL
         run: |
@@ -104,7 +104,7 @@ jobs:
   monitor_prometheus:
     name: Monitor Prometheus
     runs-on: k8s-istio
-    needs: setup
+    needs: Verify Deployment
     steps:
       - name: Check Prometheus URL
         run: |
