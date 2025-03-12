@@ -90,3 +90,23 @@ jobs:
           kubectl logs -l app=productpage > productpage-logs.txt
           cat logs.txt
           cat productpage-logs.txt
+
+  monitor_grafana:
+    name: Monitor Grafana
+    runs-on: k8s-istio
+    needs: setup
+    steps:
+      - name: Check Grafana URL
+        run: |
+          GRAFANA_URL="http://${MINIKUBE_IP}:3000"
+          echo "Checking Grafana URL: $GRAFANA_URL"
+
+  monitor_prometheus:
+    name: Monitor Prometheus
+    runs-on: k8s-istio
+    needs: setup
+    steps:
+      - name: Check Prometheus URL
+        run: |
+          PROMETHEUS_URL="http://${MINIKUBE_IP}:9090"
+          echo "Checking Prometheus URL: $PROMETHEUS_URL"
