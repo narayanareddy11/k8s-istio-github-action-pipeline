@@ -1,0 +1,45 @@
+name: Deploy BookInfo App with Istio
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: k8s  # Your self-hosted runner name
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Start Minikube
+        run: |
+          minikube status || minikube start
+
+      - name: Set up kubectl
+        run: |
+          kubectl cluster-info
+          kubectl get nodes
+
+      - name: Install Istio
+        run: |
+          curl -L https://istio.io/downloadIstio | sh -
+          cd istio-*/
+          export PATH=$PWD/bin:$PATH
+          istioctl install --set profile=demo -y
+          kubectl label namespace default istio-injection=enabled
+
+      - name: Deploy BookInfo App
+        run: |
+          kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml
+          kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml
+
+      - name: Verify Deployment
+        run: |
+          kubectl get pods -n default
+          kubectl get svc -n default
+          kubectl get gateways -n default
