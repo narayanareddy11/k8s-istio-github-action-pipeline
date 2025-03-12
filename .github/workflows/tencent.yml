@@ -1,4 +1,4 @@
-name: BookInfo CI/CD Pipeline
+name: BookInfo CI/CD with Istio
 
 on:
   push:
@@ -6,8 +6,9 @@ on:
       - main
 
 jobs:
-  setup-infra:
-    runs-on: ubuntu-latest
+  setup-minikube:
+    name: Setup Minikube & Istio
+    runs-on: k8s
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -21,110 +22,118 @@ jobs:
             echo "Minikube is already running."
           fi
 
-      - name: Install Istio
-        run: |
-          curl -L https://istio.io/downloadIstio | sh -
-          cd istio-*/
-          export PATH=$PWD/bin:$PATH
-          istioctl install --set profile=demo -y
-          kubectl label namespace default istio-injection=enabled
-
-      - name: Deploy BookInfo Application
-        run: |
-          kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.17/samples/bookinfo/platform/kube/bookinfo.yaml
-          kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.17/samples/bookinfo/networking/bookinfo-gateway.yaml
-          kubectl rollout status deployment/productpage-v1 --timeout=120s
-
       - name: Get Minikube IP
         run: echo "MINIKUBE_IP=$(minikube ip)" >> $GITHUB_ENV
 
-  monitor-prometheus:
-    needs: setup-infra
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check Prometheus URL
+      - name: Install Istio
         run: |
-          PROMETHEUS_URL="http://${MINIKUBE_IP}:9090"
-          for i in {1..5}; do
-            if curl -s --head --fail "$PROMETHEUS_URL"; then
-              echo "Prometheus is accessible."
-              exit 0
-            fi
-            sleep 10
-          done
-          echo "Prometheus is not accessible!"
-          exit 1
+          curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.17.0 sh -
+          cd istio-1.17.0
+          export PATH=$PWD/bin:$PATH
+          istioctl install --set profile=demo -y
+
+      - name: Deploy BookInfo App
+        run: |
+          kubectl apply -f istio-1.17.0/samples/bookinfo/platform/kube/bookinfo.yaml
+          kubectl apply -f istio-1.17.0/samples/bookinfo/networking/bookinfo-gateway.yaml
+          kubectl rollout status deployment/productpage-v1 -n default --timeout=120s
+
+  check-istio:
+    name: Check Istio Status
+    runs-on: k8s
+    needs: setup-minikube
+    steps:
+      - name: Verify Istio Installation
+        run: istioctl verify-install
+
+  deploy-monitoring:
+    name: Deploy Monitoring (Grafana, Prometheus, Kiali)
+    runs-on: k8s
+    needs: setup-minikube
+    steps:
+      - name: Deploy Monitoring Services
+        run: |
+          kubectl apply -f istio-1.17.0/samples/addons/grafana.yaml
+          kubectl apply -f istio-1.17.0/samples/addons/prometheus.yaml
+          kubectl apply -f istio-1.17.0/samples/addons/kiali.yaml
+          kubectl rollout status deployment/grafana -n istio-system --timeout=120s
+          kubectl rollout status deployment/prometheus -n istio-system --timeout=120s
+          kubectl rollout status deployment/kiali -n istio-system --timeout=120s
 
   monitor-grafana:
-    needs: setup-infra
-    runs-on: ubuntu-latest
+    name: Monitor Grafana
+    runs-on: k8s
+    needs: deploy-monitoring
     steps:
       - name: Check Grafana URL
         run: |
           GRAFANA_URL="http://${MINIKUBE_IP}:3000"
-          for i in {1..5}; do
-            if curl -s --head --fail "$GRAFANA_URL"; then
-              echo "Grafana is accessible."
-              exit 0
-            fi
-            sleep 10
-          done
-          echo "Grafana is not accessible!"
-          exit 1
+          echo "Checking Grafana: $GRAFANA_URL"
+          curl -s --head --fail "$GRAFANA_URL" || exit 1
+
+  monitor-prometheus:
+    name: Monitor Prometheus
+    runs-on: k8s
+    needs: deploy-monitoring
+    steps:
+      - name: Check Prometheus URL
+        run: |
+          PROMETHEUS_URL="http://${MINIKUBE_IP}:9090"
+          echo "Checking Prometheus: $PROMETHEUS_URL"
+          curl -s --head --fail "$PROMETHEUS_URL" || exit 1
 
   monitor-kiali:
-    needs: setup-infra
-    runs-on: ubuntu-latest
+    name: Monitor Kiali
+    runs-on: k8s
+    needs: deploy-monitoring
     steps:
       - name: Check Kiali URL
         run: |
           KIALI_URL="http://${MINIKUBE_IP}:20001"
-          for i in {1..5}; do
-            if curl -s --head --fail "$KIALI_URL"; then
-              echo "Kiali is accessible."
-              exit 0
-            fi
-            sleep 10
-          done
-          echo "Kiali is not accessible!"
-          exit 1
+          echo "Checking Kiali: $KIALI_URL"
+          curl -s --head --fail "$KIALI_URL" || exit 1
 
-  trivy-scan:
-    needs: setup-infra
+  infra-check:
+    name: Infrastructure Check
+    runs-on: k8s
+    needs: setup-minikube
+    steps:
+      - name: Check Nodes & Pods
+        run: |
+          kubectl get nodes
+          kubectl get pods -A
+
+  security-scan:
+    name: Trivy Security Scanning
     runs-on: ubuntu-latest
+    needs: setup-minikube
     steps:
       - name: Install Trivy
         run: |
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+          sudo apt-get install wget
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.44.1/trivy_0.44.1_Linux-64bit.deb
+          sudo dpkg -i trivy_0.44.1_Linux-64bit.deb
 
-      - name: Trivy Security Scan
+      - name: Scan BookInfo Images
         run: |
-          trivy k8s cluster minikube
+          trivy image docker.io/istio/examples-bookinfo-productpage-v1:1.17.0
+          trivy image docker.io/istio/examples-bookinfo-reviews-v1:1.17.0
 
-  check-deployment-status:
-    needs: [monitor-prometheus, monitor-grafana, monitor-kiali, trivy-scan]
-    runs-on: ubuntu-latest
+  deployment-status:
+    name: Check Deployment Status
+    runs-on: k8s
+    needs: setup-minikube
     steps:
-      - name: Check Gateway Status
+      - name: Verify Gateway & BookInfo Deployment
         run: |
-          kubectl get gateway -n istio-system
-          if [ $? -ne 0 ]; then
-            echo "Gateway deployment failed!"
-            exit 1
-          fi
-          echo "Gateway is successfully deployed."
-
-      - name: Check BookInfo App Deployment
-        run: |
+          kubectl get gateway -n default
+          kubectl get virtualservice -n default
           kubectl get pods -n default
-          kubectl rollout status deployment/details-v1 --timeout=120s
-          kubectl rollout status deployment/reviews-v1 --timeout=120s
-          kubectl rollout status deployment/ratings-v1 --timeout=120s
-          echo "BookInfo app deployed successfully!"
 
   deploy:
-    needs: check-deployment-status
-    runs-on: ubuntu-latest
+    name: Final Deployment Step
+    runs-on: k8s
+    needs: [monitor-grafana, monitor-prometheus, monitor-kiali, infra-check, security-scan, deployment-status]
     steps:
-      - name: Final Echo
-        run: echo "🎉 Deployment completed successfully!"
+      - name: Deployment Completed
+        run: echo "BookInfo Deployment Successfully Completed!"
