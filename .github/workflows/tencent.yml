@@ -8,7 +8,7 @@ on:
 jobs:
   setup-minikube:
     name: Setup Minikube & Istio
-    runs-on: k8s
+    runs-on: k8s-istio
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -27,7 +27,7 @@ jobs:
 
       - name: Install Istio
         run: |
-          curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.17.0 sh -
+          curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.25.0 sh -
           cd istio-1.17.0
           export PATH=$PWD/bin:$PATH
           istioctl install --set profile=demo -y
@@ -40,7 +40,7 @@ jobs:
 
   check-istio:
     name: Check Istio Status
-    runs-on: k8s
+    runs-on: k8s-istio
     needs: setup-minikube
     steps:
       - name: Verify Istio Installation
@@ -48,7 +48,7 @@ jobs:
 
   deploy-monitoring:
     name: Deploy Monitoring (Grafana, Prometheus, Kiali)
-    runs-on: k8s
+    runs-on: k8s-istio
     needs: setup-minikube
     steps:
       - name: Deploy Monitoring Services
@@ -62,7 +62,7 @@ jobs:
 
   monitor-grafana:
     name: Monitor Grafana
-    runs-on: k8s
+    runs-on: k8s-istio
     needs: deploy-monitoring
     steps:
       - name: Check Grafana URL
@@ -73,7 +73,7 @@ jobs:
 
   monitor-prometheus:
     name: Monitor Prometheus
-    runs-on: k8s
+    runs-on: k8s-istio
     needs: deploy-monitoring
     steps:
       - name: Check Prometheus URL
@@ -84,7 +84,7 @@ jobs:
 
   monitor-kiali:
     name: Monitor Kiali
-    runs-on: k8s
+    runs-on: k8s-istio
     needs: deploy-monitoring
     steps:
       - name: Check Kiali URL
@@ -95,7 +95,7 @@ jobs:
 
   infra-check:
     name: Infrastructure Check
-    runs-on: k8s
+    runs-on: k8s-istio
     needs: setup-minikube
     steps:
       - name: Check Nodes & Pods
@@ -121,7 +121,7 @@ jobs:
 
   deployment-status:
     name: Check Deployment Status
-    runs-on: k8s
+    runs-on: k8s-istio
     needs: setup-minikube
     steps:
       - name: Verify Gateway & BookInfo Deployment
@@ -132,7 +132,7 @@ jobs:
 
   deploy:
     name: Final Deployment Step
-    runs-on: k8s
+    runs-on: k8s-istio
     needs: [monitor-grafana, monitor-prometheus, monitor-kiali, infra-check, security-scan, deployment-status]
     steps:
       - name: Deployment Completed
