@@ -1,4 +1,4 @@
-name: Deploy BookInfo App with Istio
+name: BookInfo Deployment with Istio
 
 on:
   push:
@@ -9,8 +9,9 @@ on:
       - main
 
 jobs:
-  deploy:
-    runs-on: k8s-istio   # Your self-hosted runner name
+  setup:
+    name: Setup Minikube & Kubernetes
+    runs-on: k8s
 
     steps:
       - name: Checkout Code
@@ -18,22 +19,74 @@ jobs:
 
       - name: Start Minikube
         run: |
-          minikube status    
-          Gith#|| minikube start
+          if ! minikube status; then
+            echo "Starting Minikube..."
+            minikube start
+          else
+            echo "Minikube is already running."
+          fi
 
       - name: Set up kubectl
         run: |
           kubectl cluster-info
           kubectl get nodes
 
-
-      - name: Deploy BookInfo App
+  install_istio:
+    name: Install Istio
+    runs-on: k8s
+    needs: setup  # Runs after setup job
+    steps:
+      - name: Check Istio Installation
+        id: istio_check
         run: |
-          kubectl apply -f platform/kube/bookinfo.yaml
-          kubectl apply -f networking/bookinfo-gateway.yaml
+          if kubectl get namespace istio-system &>/dev/null; then
+            echo "Istio is already installed."
+            echo "installed=true" >> $GITHUB_ENV
+          else
+            echo "Istio is not installed."
+            echo "installed=false" >> $GITHUB_ENV
+          fi
 
-      - name: Verify Deployment
+      - name: Install Istio (if not installed)
+        if: env.installed == 'false'
+        run: |
+          curl -L https://istio.io/downloadIstio | sh -
+          cd istio-*/
+          export PATH=$PWD/bin:$PATH
+          istioctl install --set profile=demo -y
+          kubectl label namespace default istio-injection=enabled
+
+  deploy_bookinfo:
+    name: Deploy BookInfo App
+    runs-on: k8s
+    needs: install_istio  # Runs after Istio is installed
+
+    steps:
+      - name: Deploy BookInfo Application
+        run: |
+          kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml
+          kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml
+
+      - name: Wait for Pods to be Ready
+        run: |
+          kubectl wait --for=condition=ready pod --all --timeout=120s
+
+  verify_deployment:
+    name: Verify Deployment
+    runs-on: k8s
+    needs: deploy_bookinfo  # Runs after deployment
+
+    steps:
+      - name: Check Running Services
         run: |
           kubectl get pods -n default
           kubectl get svc -n default
           kubectl get gateways -n default
+
+      - name: Capture Logs on Failure
+        if: failure()
+        run: |
+          kubectl get events --sort-by=.metadata.creationTimestamp > logs.txt
+          kubectl logs -l app=productpage > productpage-logs.txt
+          cat logs.txt
+          cat productpage-logs.txt
