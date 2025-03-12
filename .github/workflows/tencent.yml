@@ -10,7 +10,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: k8s  # Your self-hosted runner name
+    runs-on: self-hosted   # Your self-hosted runner name
 
     steps:
       - name: Checkout Code
