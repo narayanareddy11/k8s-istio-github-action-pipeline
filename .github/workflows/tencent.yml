@@ -94,7 +94,7 @@ jobs:
   monitor_grafana:
     name: Monitor Grafana
     runs-on: k8s-istio
-    needs: Verify Deployment
+    needs: verify_deployment
     steps:
       - name: Check Grafana URL
         run: |
@@ -104,7 +104,7 @@ jobs:
   monitor_prometheus:
     name: Monitor Prometheus
     runs-on: k8s-istio
-    needs: Verify Deployment
+    needs: verify_deployment
     steps:
       - name: Check Prometheus URL
         run: |
