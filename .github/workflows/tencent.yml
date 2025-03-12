@@ -11,7 +11,7 @@ on:
 jobs:
   setup:
     name: Setup Minikube & Kubernetes
-    runs-on: k8s
+    runs-on: k8s-istio
 
     steps:
       - name: Checkout Code
@@ -32,8 +32,8 @@ jobs:
           kubectl get nodes
 
   install_istio:
-    name: Install Istio
-    runs-on: k8s
+    name: check Istio
+    runs-on: k8s-istio-istio
     needs: setup  # Runs after setup job
     steps:
       - name: Check Istio Installation
@@ -58,7 +58,7 @@ jobs:
 
   deploy_bookinfo:
     name: Deploy BookInfo App
-    runs-on: k8s
+    runs-on: k8s-istio-istio
     needs: install_istio  # Runs after Istio is installed
 
     steps:
@@ -73,7 +73,7 @@ jobs:
 
   verify_deployment:
     name: Verify Deployment
-    runs-on: k8s
+    runs-on: k8s-istio-istio
     needs: deploy_bookinfo  # Runs after deployment
 
     steps:
