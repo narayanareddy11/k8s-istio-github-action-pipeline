@@ -29,8 +29,8 @@ jobs:
 
       - name: Deploy BookInfo App
         run: |
-          kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml
-          kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml
+          kubectl apply -f platform/kube/bookinfo.yaml
+          kubectl apply -f networking/bookinfo-gateway.yaml
 
       - name: Verify Deployment
         run: |
