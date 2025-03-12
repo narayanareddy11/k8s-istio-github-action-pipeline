@@ -21,21 +21,28 @@ jobs:
           else
             echo "Minikube is already running."
           fi
-
+  Minikube_IP:
+    runs-on: k8s-istio
+    steps:
       - name: Get Minikube IP
         run: echo "MINIKUBE_IP=$(minikube ip)" >> $GITHUB_ENV
 
+  Install_Istio:
+    runs-on: k8s-istio
+    steps:
       - name: Install Istio
         run: |
           curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.25.0 sh -
-          cd istio-1.17.0
+          cd istio-1.25.0
           export PATH=$PWD/bin:$PATH
           istioctl install --set profile=demo -y
-
+  Deploy_BookInfo:
+    runs-on: k8s-istio
+    steps:
       - name: Deploy BookInfo App
         run: |
-          kubectl apply -f istio-1.17.0/samples/bookinfo/platform/kube/bookinfo.yaml
-          kubectl apply -f istio-1.17.0/samples/bookinfo/networking/bookinfo-gateway.yaml
+          kubectl apply -f istio-1.25.0/samples/bookinfo/platform/kube/bookinfo.yaml
+          kubectl apply -f istio-1.25.0/samples/bookinfo/networking/bookinfo-gateway.yaml
           kubectl rollout status deployment/productpage-v1 -n default --timeout=120s
 
   check-istio:
@@ -53,9 +60,9 @@ jobs:
     steps:
       - name: Deploy Monitoring Services
         run: |
-          kubectl apply -f istio-1.17.0/samples/addons/grafana.yaml
-          kubectl apply -f istio-1.17.0/samples/addons/prometheus.yaml
-          kubectl apply -f istio-1.17.0/samples/addons/kiali.yaml
+          kubectl apply -f istio-1.25.0/samples/addons/grafana.yaml
+          kubectl apply -f istio-1.25.0/samples/addons/prometheus.yaml
+          kubectl apply -f istio-1.25.0/samples/addons/kiali.yaml
           kubectl rollout status deployment/grafana -n istio-system --timeout=120s
           kubectl rollout status deployment/prometheus -n istio-system --timeout=120s
           kubectl rollout status deployment/kiali -n istio-system --timeout=120s
@@ -105,7 +112,7 @@ jobs:
 
   security-scan:
     name: Trivy Security Scanning
-    runs-on: ubuntu-latest
+    runs-on: k8s-istio
     needs: setup-minikube
     steps:
       - name: Install Trivy
@@ -116,8 +123,8 @@ jobs:
 
       - name: Scan BookInfo Images
         run: |
-          trivy image docker.io/istio/examples-bookinfo-productpage-v1:1.17.0
-          trivy image docker.io/istio/examples-bookinfo-reviews-v1:1.17.0
+          trivy image docker.io/istio/examples-bookinfo-productpage-v1:1.25.0
+          trivy image docker.io/istio/examples-bookinfo-reviews-v1:1.25.0
 
   deployment-status:
     name: Check Deployment Status
