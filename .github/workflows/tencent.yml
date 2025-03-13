@@ -54,7 +54,7 @@ jobs:
 
           - name: Check if Istio is Installed
             run: |
-              if istioctl version --remote; then
+              if istioctl version; then
             echo "Istio is already installed."
               else
             echo "Istio is not installed. Installing Istio..."
@@ -130,7 +130,7 @@ jobs:
   infra-check:
     name: Infrastructure Check
     runs-on: self-hosted
-    needs: setup-minikube
+    needs: [setup-minikube, Deploy_BookInfo]
     steps:
       - name: Check Infrastructure
         run: |
@@ -146,7 +146,7 @@ jobs:
   security-scan:
     name: Trivy Security Scanning
     runs-on: self-hosted
-    needs: setup-minikube
+    needs: [setup-minikube, infra-check]
     steps:
       - name: Install Trivy
         run: |
