@@ -25,6 +25,23 @@ jobs:
           else
             echo "Minikube is already running."
           fi
+      - name: Install Istio
+      run: |
+        curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.25.0 sh -
+        cd istio-1.25.0
+        export PATH=$PWD/bin:$PATH
+        istioctl install --set profile=demo -y
+        - name: Check if Istio is Installed
+          run: |
+            if istioctl version --remote; then
+          echo "Istio is already installed."
+            else
+          echo "Istio is not installed. Installing Istio..."
+          curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.25.0 sh -
+          cd istio-1.25.0
+          export PATH=$PWD/bin:$PATH
+          istioctl install --set profile=demo -y
+            fi
 
   Minikube_IP:
     runs-on: self-hosted
@@ -39,10 +56,7 @@ jobs:
     steps:
       - name: Install Istio
         run: |
-          curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.25.0 sh -
-          cd istio-1.25.0
-          export PATH=$PWD/bin:$PATH
-          istioctl install --set profile=demo -y
+
           - name: Check if Istio is Installed
             run: |
               if istioctl version --remote; then
@@ -71,7 +85,7 @@ jobs:
     needs: setup-minikube
     steps:
       - name: Verify Istio Installation
-        run: istioctl verify-install
+        run: istioctl version
 
   deploy-monitoring:
     name: Deploy Monitoring (Grafana, Prometheus, Kiali)
