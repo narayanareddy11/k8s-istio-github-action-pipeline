@@ -8,7 +8,7 @@ on:
 jobs:
   setup-minikube:
     name: Setup Minikube & Istio
-    runs-on: k8s-istio
+    runs-on: self-hosted
     needs: [cleanup]
     steps:
       - name: Checkout Code
@@ -27,14 +27,14 @@ jobs:
           fi
 
   Minikube_IP:
-    runs-on: k8s-istio
+    runs-on: self-hosted
     needs: setup-minikube
     steps:
       - name: Get Minikube IP
         run: echo "MINIKUBE_IP=$(minikube ip)" >> $GITHUB_ENV
 
   Install_Istio:
-    runs-on: k8s-istio
+    runs-on: self-hosted
     needs: setup-minikube
     steps:
       - name: Install Istio
@@ -56,7 +56,7 @@ jobs:
               fi
 
   Deploy_BookInfo:
-    runs-on: k8s-istio
+    runs-on: self-hosted
     needs: setup-minikube
     steps:
       - name: Deploy BookInfo App
@@ -67,7 +67,7 @@ jobs:
 
   check-istio:
     name: Check Istio Status
-    runs-on: k8s-istio
+    runs-on: self-hosted
     needs: setup-minikube
     steps:
       - name: Verify Istio Installation
@@ -75,7 +75,7 @@ jobs:
 
   deploy-monitoring:
     name: Deploy Monitoring (Grafana, Prometheus, Kiali)
-    runs-on: k8s-istio
+    runs-on: self-hosted
     needs: setup-minikube
     steps:
       - name: Deploy Monitoring Services
@@ -89,7 +89,7 @@ jobs:
 
   monitor-grafana:
     name: Monitor Grafana
-    runs-on: k8s-istio
+    runs-on: self-hosted
     needs: deploy-monitoring
     steps:
       - name: Check Grafana URL
@@ -100,7 +100,7 @@ jobs:
 
   monitor-prometheus:
     name: Monitor Prometheus
-    runs-on: k8s-istio
+    runs-on: self-hosted
     needs: deploy-monitoring
     steps:
       - name: Check Prometheus URL
@@ -111,7 +111,7 @@ jobs:
 
   monitor-kiali:
     name: Monitor Kiali
-    runs-on: k8s-istio
+    runs-on: self-hosted
     needs: deploy-monitoring
     steps:
       - name: Check Kiali URL
@@ -122,7 +122,7 @@ jobs:
 
   infra-check:
     name: Infrastructure Check
-    runs-on: k8s-istio
+    runs-on: self-hosted
     needs: setup-minikube
     steps:
       - name: Check Infrastructure
@@ -138,7 +138,7 @@ jobs:
 
   security-scan:
     name: Trivy Security Scanning
-    runs-on: k8s-istio
+    runs-on: self-hosted
     needs: setup-minikube
     steps:
       - name: Install Trivy
@@ -154,7 +154,7 @@ jobs:
 
   deployment-status:
     name: Check Deployment Status
-    runs-on: k8s-istio
+    runs-on: self-hosted
     needs: setup-minikube
     steps:
       - name: Verify Gateway & BookInfo Deployment
@@ -165,7 +165,7 @@ jobs:
 
   run-tests:
     name: Run Tests
-    runs-on: k8s-istio
+    runs-on: self-hosted
     needs: Deploy_BookInfo
     steps:
       - name: Run Integration Tests
@@ -175,7 +175,7 @@ jobs:
 
   notify:
     name: Notify Team
-    runs-on: k8s-istio
+    runs-on: self-hosted
     needs: [monitor-grafana, monitor-prometheus, monitor-kiali, infra-check, security-scan, deployment-status, run-tests]
     steps:
       - name: Send Notification
@@ -211,7 +211,7 @@ jobs:
 
   deploy:
     name: Final Deployment Step
-    runs-on: k8s-istio
+    runs-on: self-hosted
     needs: [notify, cleanup]
     steps:
       - name: Display Deployment URLs
