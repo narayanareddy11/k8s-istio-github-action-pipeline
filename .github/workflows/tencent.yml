@@ -119,7 +119,7 @@ jobs:
   monitor-kiali:
     name: Monitor Kiali
     runs-on: self-hosted
-    needs: [deploy-monitoring, Minikube_IP
+    needs: [deploy-monitoring, Minikube_IP]
     steps:
       - name: Check Kiali URL
         run: |
