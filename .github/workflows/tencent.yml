@@ -80,6 +80,7 @@ jobs:
     steps:
       - name: Deploy Monitoring Services
         run: |
+          kubectl create namespace istio-system
           kubectl apply -f samples/addons/grafana.yaml
           kubectl apply -f samples/addons/prometheus.yaml
           kubectl apply -f samples/addons/kiali.yaml
