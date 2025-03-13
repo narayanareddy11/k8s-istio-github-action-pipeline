@@ -168,7 +168,6 @@ jobs:
           kubectl get gateway -n default
           kubectl get virtualservice -n default
           kubectl get pods -n default
-
   run-tests:
     name: Run Tests
     runs-on: self-hosted
