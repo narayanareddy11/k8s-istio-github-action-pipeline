@@ -97,7 +97,7 @@ jobs:
   monitor-grafana:
     name: Monitor Grafana
     runs-on: self-hosted
-    needs: deploy-monitoring
+    needs: [deploy-monitoring, Minikube_IP]
     steps:
       - name: Check Grafana URL
         run: |
@@ -108,7 +108,7 @@ jobs:
   monitor-prometheus:
     name: Monitor Prometheus
     runs-on: self-hosted
-    needs: deploy-monitoring
+    needs: [deploy-monitoring, Minikube_IP]
     steps:
       - name: Check Prometheus URL
         run: |
@@ -119,7 +119,7 @@ jobs:
   monitor-kiali:
     name: Monitor Kiali
     runs-on: self-hosted
-    needs: deploy-monitoring
+    needs: [deploy-monitoring, Minikube_IP
     steps:
       - name: Check Kiali URL
         run: |
@@ -130,7 +130,7 @@ jobs:
   infra-check:
     name: Infrastructure Check
     runs-on: self-hosted
-    needs: [setup-minikube, Deploy_BookInfo]
+    needs: [setup-minikube, check-istio, Deploy_BookInfo]
     steps:
       - name: Check Infrastructure
         run: |
