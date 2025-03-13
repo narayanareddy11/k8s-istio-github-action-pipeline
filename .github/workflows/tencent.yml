@@ -191,7 +191,7 @@ jobs:
 
   cleanup:
     name: Cleanup Resources
-    runs-on: k8s-istio
+    runs-on: self-hosted
 
     if: always()
     steps:
