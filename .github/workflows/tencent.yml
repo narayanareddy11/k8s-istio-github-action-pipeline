@@ -195,11 +195,20 @@ jobs:
 
     if: always()
     steps:
-      - name: Delete Minikube Cluster
+      - name: Delete Workspace
         run: 
-          kubectl delete -f samples/bookinfo/platform/kube/bookinfo.yaml
-          kubectl delete -f samples/bookinfo/networking/bookinfo-gateway.yaml
-          kubectl delete all --all --namespace=default
+          if ! minikube status; then
+            echo "Starting Minikube..."
+            #minikube delete
+            #minikube start --cpus=4 --memory=8192 --kubernetes-version=v1.30.0 --driver=virtualbox
+            minikube start --cpus=4 --memory=8192 --disk-size=50g --kubernetes-version=v1.28.3 --driver=virtualbox
+            #minikube start 
+          else
+            echo "Minikube is already running."
+            kubectl delete -f samples/bookinfo/platform/kube/bookinfo.yaml
+            kubectl delete -f samples/bookinfo/networking/bookinfo-gateway.yaml
+            kubectl delete all --all --namespace=default
+          fi
 
   deploy:
     name: Final Deployment Step
