@@ -30,8 +30,8 @@ jobs:
 
           - name: Check if Istio is Installed
             run: |
-                if istioctl version; then
-                echo "Istio is already installed."
+              if istioctl version; then
+                 echo "Istio is already installed."
               else
                 echo "Istio is not installed. Installing Istio..."
                 curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.25.0 sh -
