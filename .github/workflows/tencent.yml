@@ -36,6 +36,8 @@ jobs:
             cd istio-1.25.0
             export PATH=$PWD/bin:$PATH
             istioctl install --set profile=demo -y
+            echo "profile=demo set"
+            istioctl x precheck
           fi
 
   Minikube_IP:
@@ -49,17 +51,14 @@ jobs:
     runs-on: self-hosted
     needs: setup-minikube
     steps:
-      - name: Install Istio
+      - name: Check if Istio version
+        shell: bash
         run: |
-
-          - name: Check if Istio is Installed
-            run: |
-              if istioctl version; then
+          if istioctl version; then
             echo "Istio is already installed."
-              else
-            echo "Istio is not installed. Installing Istio..."
- 
-              fi
+          else
+            echo "Istio is not installed.
+          fi
 
   Deploy_BookInfo:
     runs-on: self-hosted
@@ -86,7 +85,7 @@ jobs:
     steps:
       - name: Deploy Monitoring Services
         run: |
-          kubectl create namespace istio-system
+          kubectl get namespace istio-system || kubectl create namespace istio-system
           kubectl apply -f samples/addons/grafana.yaml
           kubectl apply -f samples/addons/prometheus.yaml
           kubectl apply -f samples/addons/kiali.yaml
