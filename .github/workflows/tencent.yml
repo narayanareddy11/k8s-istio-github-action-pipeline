@@ -195,8 +195,9 @@ jobs:
 
     if: always()
     steps:
-      - name: Delete Workspace
-        run: 
+
+      - name: Start Minikube
+        run: |
           if ! minikube status; then
             echo "Starting Minikube..."
             #minikube delete
@@ -205,8 +206,6 @@ jobs:
             #minikube start 
           else
             echo "Minikube is already running."
-            kubectl delete -f samples/bookinfo/platform/kube/bookinfo.yaml
-            kubectl delete -f samples/bookinfo/networking/bookinfo-gateway.yaml
             kubectl delete all --all --namespace=default
           fi
 
