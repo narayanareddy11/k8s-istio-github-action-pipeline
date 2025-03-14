@@ -59,8 +59,10 @@ jobs:
       - name: Check if Istio version
         shell: bash
         run: |
+          export PATH=$HOME/.istioctl/bin:$PATH 
           if istioctl x precheck; then
             echo "Istio is already installed."
+            istioctl x precheck
           else
             echo "Istio is not installed"
           fi
@@ -178,7 +180,7 @@ jobs:
   deployment-status:
     name: Check Deployment Status
     runs-on: self-hosted
-    needs: setup-minikube
+    needs: [setup-minikube, Deploy_BookInfo, deploy-monitoring]
     steps:
       - name: Verify Gateway & BookInfo Deployment
         run: |
