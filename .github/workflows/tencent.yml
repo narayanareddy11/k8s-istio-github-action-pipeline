@@ -50,7 +50,7 @@ jobs:
         
         run: |
           export MINIKUBE_IP=$(minikube ip)
-          echo "MINIKUBE_IP=$(minikube ip)" >> $GITHUB_ENV
+          echo "Minikube IP: $MINIKUBE_IP"  
 
   Install_Istio:
     runs-on: self-hosted
@@ -107,6 +107,8 @@ jobs:
       - name: Check Grafana URL
         shell: bash
         run: |
+          export MINIKUBE_IP=$(minikube ip)
+          echo "Minikube IP: $MINIKUBE_IP"  
           GRAFANA_URL="http://${MINIKUBE_IP}:3000"
           echo "Checking Grafana: $GRAFANA_URL"
           curl -s --head --fail "$GRAFANA_URL" || exit 1
@@ -119,6 +121,8 @@ jobs:
       - name: Check Prometheus URL
         shell: bash
         run: |
+          export MINIKUBE_IP=$(minikube ip)
+          echo "Minikube IP: $MINIKUBE_IP"  
           PROMETHEUS_URL="http://${MINIKUBE_IP}:9090"
           echo "Checking Prometheus: $PROMETHEUS_URL"
           curl -s --head --fail "$PROMETHEUS_URL" || exit 1
