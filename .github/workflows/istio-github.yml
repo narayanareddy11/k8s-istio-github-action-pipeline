@@ -82,7 +82,9 @@ jobs:
     steps:
       - name: Verify Istio Installation
         shell: bash
-        run: istioctl x precheck
+        run: |  
+          export PATH=$HOME/.istioctl/bin:$PATH 
+          istioctl x precheck
 
   deploy-monitoring:
     name: Deploy Monitoring (Grafana, Prometheus, Kiali)
@@ -108,7 +110,6 @@ jobs:
         shell: bash
         run: |
           export MINIKUBE_IP=$(minikube ip)
-          echo "Minikube IP: $MINIKUBE_IP"  
           GRAFANA_URL="http://${MINIKUBE_IP}:3000"
           echo "Checking Grafana: $GRAFANA_URL"
           curl -s --head --fail "$GRAFANA_URL" || exit 1
@@ -121,8 +122,7 @@ jobs:
       - name: Check Prometheus URL
         shell: bash
         run: |
-          export MINIKUBE_IP=$(minikube ip)
-          echo "Minikube IP: $MINIKUBE_IP"  
+          export MINIKUBE_IP=$(minikube ip) 
           PROMETHEUS_URL="http://${MINIKUBE_IP}:9090"
           echo "Checking Prometheus: $PROMETHEUS_URL"
           curl -s --head --fail "$PROMETHEUS_URL" || exit 1
@@ -135,6 +135,7 @@ jobs:
       - name: Check Kiali URL
         shell: bash
         run: |
+          export MINIKUBE_IP=$(minikube ip)
           KIALI_URL="http://${MINIKUBE_IP}:20001"
           echo "Checking Kiali: $KIALI_URL"
           curl -s --head --fail "$KIALI_URL" || exit 1
@@ -147,6 +148,7 @@ jobs:
       - name: Check Infrastructure
         shell: bash
         run: |
+          export PATH=$HOME/.istioctl/bin:$PATH 
           kubectl get nodes
           kubectl get pods -A
           echo "Kubernetes Version:"
