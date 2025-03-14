@@ -11,7 +11,7 @@ This repository contains the **Bookinfo** sample application deployed on **Istio
 - [Testing](#testing)
 - [Cleanup](#cleanup)
 - [Useful Commands](#useful-commands)
-- [License](#license)
+
 
 ## Overview
 The **Bookinfo** application consists of multiple microservices demonstrating Istio's capabilities, including traffic routing, observability, and security enforcement. It includes:
@@ -131,6 +131,4 @@ kubectl delete all --all --namespace=default
 | List Istio Services | `kubectl get svc -n istio-system` |
 | Delete Minikube Cluster | `minikube delete` |
 
-## License
-This project is licensed under the [Apache 2.0 License](LICENSE).
 
