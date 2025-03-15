@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  MINIKUBE_IP: ${{$(minikube ip)}}
+  MINIKUBE_IP: $(minikube ip)
 
 jobs:
   setup-minikube:
