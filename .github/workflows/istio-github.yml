@@ -123,8 +123,7 @@ jobs:
       - name: Check Grafana URL
         shell: bash
         run: |
-          export MINIKUBE_IP=$(minikube ip)
-          GRAFANA_URL="http://${MINIKUBE_IP}:3000"
+          GRAFANA_URL="http://localhost:3000"
           echo "Checking Grafana: $GRAFANA_URL"
         #  curl -s --head --fail "$GRAFANA_URL" || exit 1
 
@@ -136,8 +135,7 @@ jobs:
       - name: Check Jaeger URL
         shell: bash
         run: |
-          export MINIKUBE_IP=$(minikube ip)
-          JAEGER_URL="http://${MINIKUBE_IP}:16686"
+          JAEGER_URL="http://localhost:16686"
           echo "Checking Jaeger: $JAEGER_URL"
         #  curl -s --head --fail "$JAEGER_URL" || exit 1
 
@@ -149,8 +147,8 @@ jobs:
       - name: Check Prometheus URL
         shell: bash
         run: |
-          export MINIKUBE_IP=$(minikube ip) 
-          PROMETHEUS_URL="http://${MINIKUBE_IP}:9090"
+
+          PROMETHEUS_URL="http://localhost:9090"
           echo "Checking Prometheus: $PROMETHEUS_URL"
         # curl -s --head --fail "$PROMETHEUS_URL" || exit 1
 
@@ -162,8 +160,7 @@ jobs:
       - name: Check Kiali URL
         shell: bash
         run: |
-          export MINIKUBE_IP=$(minikube ip)
-          KIALI_URL="http://${MINIKUBE_IP}:20001"
+          KIALI_URL="http://localhost:20001"
           echo "Checking Kiali: $KIALI_URL"
          # curl -s --head --fail "$KIALI_URL" || exit 1
 
