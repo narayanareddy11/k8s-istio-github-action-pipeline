@@ -184,7 +184,7 @@ jobs:
   security-scan:
     name: Trivy Security Scanning
     runs-on: self-hosted
-    needs: [setup-minikube, infra-check]
+    needs: [setup-minikube]
     steps:
       - name: Check if Trivy is Installed
         shell: bash
