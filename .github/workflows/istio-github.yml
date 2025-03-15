@@ -219,7 +219,7 @@ jobs:
   run-tests:
     name: Run Tests
     runs-on: self-hosted
-    needs: [Deploy_BookInfo, Minikube_IP, infra-check]
+    needs: [Deploy_BookInfo, Minikube_IP, infra-check, trivy-security-scan]
     steps:
       - name: Run Integration Tests
         run: |
