@@ -119,6 +119,19 @@ jobs:
           echo "Checking Grafana: $GRAFANA_URL"
         #  curl -s --head --fail "$GRAFANA_URL" || exit 1
 
+  monitor-jaeger:
+    name: Monitor Jaeger
+    runs-on: self-hosted
+    needs: [deploy-monitoring, Minikube_IP]
+    steps:
+      - name: Check Jaeger URL
+        shell: bash
+        run: |
+          export MINIKUBE_IP=$(minikube ip)
+          JAEGER_URL="http://${MINIKUBE_IP}:16686"
+          echo "Checking Jaeger: $JAEGER_URL"
+        #  curl -s --head --fail "$JAEGER_URL" || exit 1
+
   monitor-prometheus:
     name: Monitor Prometheus
     runs-on: self-hosted
@@ -207,11 +220,11 @@ jobs:
           echo "Running integration tests..."
 
   notify:
-    name: Notify Team
+    name: Email Notify Team
     runs-on: self-hosted
     needs: [monitor-grafana, monitor-prometheus, monitor-kiali, infra-check, security-scan, deployment-status, run-tests]
     steps:
-      - name: Send Notification
+      - name: Send email Notification
         run: |
           echo "Job Status: ${{ job.status }}"
           echo "Repository: ${{ github.repository }}"
@@ -250,7 +263,9 @@ jobs:
       - name: Display Deployment URLs
         shell: bash
         run: |
+          export MINIKUBE_IP=$(minikube ip)
           echo "BookInfo Deployment Successfully Completed!"
           echo "Grafana URL: http://${MINIKUBE_IP}:3000"
           echo "Prometheus URL: http://${MINIKUBE_IP}:9090"
           echo "Kiali URL: http://${MINIKUBE_IP}:20001"
+          echo "JAEGER_URL="http://${MINIKUBE_IP}:16686"
