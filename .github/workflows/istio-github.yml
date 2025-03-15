@@ -222,7 +222,7 @@ jobs:
   notify:
     name: Email Notify Team
     runs-on: self-hosted
-    needs: [monitor-grafana, monitor-prometheus, monitor-kiali, infra-check, security-scan, deployment-status, run-tests]
+    needs: [monitor-grafana, monitor-jaeger, monitor-prometheus, monitor-kiali, infra-check, security-scan, deployment-status, run-tests]
     steps:
       - name: Send email Notification
         run: |
