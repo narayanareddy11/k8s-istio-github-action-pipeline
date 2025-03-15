@@ -77,7 +77,7 @@ jobs:
 
   Deploy_BookInfo:
     runs-on: self-hosted
-    needs: setup-minikube
+    needs: [setup-minikube,check-istio, Install_Istio,check-istio, Minikube_IP, Install_Istio, infra-check]
     steps:
       - name: Deploy BookInfo App
         run: |
