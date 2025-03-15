@@ -113,7 +113,7 @@ jobs:
           export INGRESS_HOST=$(minikube ip)
           export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
           export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
-          echo "productpage : http://$GATEWAY_URL:30685/productpage"
+          echo "http://$GATEWAY_URL/productpage"
 
   monitor-grafana:
     name: Monitor Grafana
@@ -281,5 +281,9 @@ jobs:
           echo "Prometheus URL: http://localhost:9090"
           echo "Kiali URL: http://localhost:20001"
           echo "JAEGER_URL: http://localhost:16686"
-          echo "Productpage : http://${MINIKUBE_IP}:30685/productpage"
+          export INGRESS_HOST=$(minikube ip)
+          export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
+          export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
+          echo "http://$GATEWAY_URL/productpage"
+
 
