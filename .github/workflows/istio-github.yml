@@ -39,6 +39,8 @@ jobs:
             export PATH=$HOME/.istioctl/bin:$PATH
       
             istioctl install --set profile=demo -y
+            kubectl label namespace default istio-injection=enabled
+
             echo "****** profile=demo set *******"
             istioctl x precheck
 
