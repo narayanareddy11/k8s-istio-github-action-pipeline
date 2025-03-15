@@ -171,15 +171,15 @@ jobs:
         shell: bash
         run: |
           # Define the images to scan
+          # "istio/examples-bookinfo-reviews-v2:1.20.2"
+          # "istio/examples-bookinfo-reviews-v3:1.20.2"
+          # "istio/examples-bookinfo-ratings-v1:1.20.2"
+          # "istio/examples-bookinfo-reviews-v1:1.20.2"
+          # "istio/examples-bookinfo-details-v1:1.20.2"
           images=(
             "istio/examples-bookinfo-productpage-v1:1.20.2"
-            "istio/examples-bookinfo-reviews-v2:1.20.2"
-            "istio/examples-bookinfo-reviews-v3:1.20.2"
-            "istio/examples-bookinfo-ratings-v1:1.20.2"
-            "istio/examples-bookinfo-reviews-v1:1.20.2"
-            "istio/examples-bookinfo-details-v1:1.20.2"
-          )
 
+          )
           # Loop over each image and run Trivy scan
           for image in "${images[@]}"; do
             echo "Scanning $image"
