@@ -5,6 +5,12 @@ on:
     branches:
       - main
 
+env:
+
+  INGRESS_HOST=$(minikube ip)
+  INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
+  GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
+
 jobs:
   setup-minikube:
     name: Setup Minikube & Istio
@@ -73,11 +79,9 @@ jobs:
     steps:
       - name: Deploy BookInfo App
         run: |
-
-
-
-          kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml
-          kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml
+          kubectl label namespace default istio-injection=enabled
+          kubectl apply -f bookinfo.yaml
+          kubectl apply -f bookinfo-gateway.yaml
           kubectl rollout status deployment/productpage-v1 -n default --timeout=120s
 
   check-istio:
@@ -99,9 +103,7 @@ jobs:
       - name: Deploy Monitoring Services
         run: |
           kubectl get namespace istio-system || kubectl create namespace istio-system
-          kubectl apply -f samples/addons/grafana.yaml
-          kubectl apply -f samples/addons/prometheus.yaml
-          kubectl apply -f samples/addons/kiali.yaml
+          kubectl apply -f moniter/
           kubectl rollout status deployment/grafana -n istio-system --timeout=120s
           kubectl rollout status deployment/prometheus -n istio-system --timeout=120s
           kubectl rollout status deployment/kiali -n istio-system --timeout=120s
