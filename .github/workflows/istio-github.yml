@@ -219,7 +219,7 @@ jobs:
   run-tests:
     name: Run Tests
     runs-on: self-hosted
-    needs: [Deploy_BookInfo, install-istio, Minikube_IP]
+    needs: [Deploy_BookInfo, Minikube_IP]
     steps:
       - name: Run Integration Tests
         run: |
