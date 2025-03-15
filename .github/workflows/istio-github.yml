@@ -100,7 +100,7 @@ jobs:
   deploy-monitoring:
     name: Deploy Monitoring (Grafana, Prometheus, Kiali)
     runs-on: self-hosted
-    needs: setup-minikube
+    needs: [setup-minikube, Deploy_BookInfo]
     steps:
       - name: Deploy Monitoring Services
         run: |
