@@ -41,10 +41,7 @@ jobs:
             istioctl install --set profile=demo -y
             kubectl label namespace default istio-injection=enabled
 
-            export INGRESS_HOST=$(minikube ip)
-            export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
-            export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
-            http://$GATEWAY_URL/productpage
+
 
 
             echo "****************  http://$GATEWAY_URL/productpage   ********************"
@@ -112,6 +109,11 @@ jobs:
           kubectl rollout status deployment/grafana -n istio-system --timeout=120s
           kubectl rollout status deployment/prometheus -n istio-system --timeout=120s
           kubectl rollout status deployment/kiali -n istio-system --timeout=120s
+
+          export INGRESS_HOST=$(minikube ip)
+          export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
+          export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
+          http://$GATEWAY_URL/productpage
 
   monitor-grafana:
     name: Monitor Grafana
