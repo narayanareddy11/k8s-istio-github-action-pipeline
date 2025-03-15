@@ -268,4 +268,4 @@ jobs:
           echo "Grafana URL: http://${MINIKUBE_IP}:3000"
           echo "Prometheus URL: http://${MINIKUBE_IP}:9090"
           echo "Kiali URL: http://${MINIKUBE_IP}:20001"
-          echo "JAEGER_URL="http://${MINIKUBE_IP}:16686"
+          echo "JAEGER_URL: http://${MINIKUBE_IP}:16686"
