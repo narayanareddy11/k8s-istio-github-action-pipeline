@@ -73,6 +73,9 @@ jobs:
     steps:
       - name: Deploy BookInfo App
         run: |
+
+
+
           kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml
           kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml
           kubectl rollout status deployment/productpage-v1 -n default --timeout=120s
@@ -167,18 +170,21 @@ jobs:
       - name: Check if Trivy is Installed
         shell: bash
         run: |
-          if ! command -v trivy &> /dev/null; then
-            echo "Trivy is not installed. Installing Trivy..."
-            wget https://github.com/aquasecurity/trivy/releases/download/v0.44.1/trivy_0.44.1_Linux-64bit.deb
-            sudo dpkg -i trivy_0.44.1_Linux-64bit.deb
-          else
-            echo "Trivy is already installed."
-          fi
+          # Define the images to scan
+          images=(
+            "istio/examples-bookinfo-productpage-v1:1.20.2"
+            "istio/examples-bookinfo-reviews-v2:1.20.2"
+            "istio/examples-bookinfo-reviews-v3:1.20.2"
+            "istio/examples-bookinfo-ratings-v1:1.20.2"
+            "istio/examples-bookinfo-reviews-v1:1.20.2"
+            "istio/examples-bookinfo-details-v1:1.20.2"
+          )
 
-      - name: Scan BookInfo Images
-        run: |
-          trivy image docker.io/istio/examples-bookinfo-productpage-v1:1.25.0
-          trivy image docker.io/istio/examples-bookinfo-reviews-v1:1.25.0
+          # Loop over each image and run Trivy scan
+          for image in "${images[@]}"; do
+            echo "Scanning $image"
+            trivy image $image
+          done
 
   deployment-status:
     name: Check Deployment Status
