@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+env:
+  MINIKUBE_IP: ${{$(minikube ip)}}
+
 jobs:
   setup-minikube:
     name: Setup Minikube & Istio
@@ -202,7 +205,7 @@ jobs:
     steps:
       - name: Verify Gateway & BookInfo Deployment
         run: |
-          echo "Productpage : http://$GATEWAY_URL/productpage"
+          echo "Productpage : http://${MINIKUBE_IP}/productpage"
           kubectl get gateway -n default
           kubectl get virtualservice -n default
           kubectl get pods -n default
@@ -214,7 +217,7 @@ jobs:
       - name: Run Integration Tests
         run: |
           # Add commands to run your tests here
-          echo "Productpage : http://$GATEWAY_URL/productpage"
+          echo "Productpage : http://${MINIKUBE_IP}/productpage"
           echo "Running integration tests..."
 
   notify:
@@ -232,7 +235,7 @@ jobs:
           echo "Job: ${{ github.job }}"
           echo "Event Name: ${{ github.event_name }}"
           echo "Ref: ${{ github.ref }}"
-          echo "Productpage : http://$GATEWAY_URL/productpage"
+          echo "Productpage : http://${MINIKUBE_IP}/productpage"
 
 
   cleanup:
@@ -267,9 +270,9 @@ jobs:
         run: |
           export MINIKUBE_IP=$(minikube ip)
           echo "BookInfo Deployment Successfully Completed!"
-          echo "Grafana URL: http://${MINIKUBE_IP}:3000"
-          echo "Prometheus URL: http://${MINIKUBE_IP}:9090"
-          echo "Kiali URL: http://${MINIKUBE_IP}:20001"
-          echo "JAEGER_URL: http://${MINIKUBE_IP}:16686"
-          echo "Productpage : http://$GATEWAY_URL/productpage"
+          echo "Grafana URL: http://localhost:3000"
+          echo "Prometheus URL: http://localhost:9090"
+          echo "Kiali URL: http://localhost:20001"
+          echo "JAEGER_URL: http://localhost:16686"
+          echo "Productpage : http://${MINIKUBE_IP}/productpage"
 
