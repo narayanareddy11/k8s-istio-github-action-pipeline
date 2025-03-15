@@ -170,7 +170,7 @@ jobs:
   infra-check:
     name: Infrastructure Check
     runs-on: self-hosted
-    needs: [setup-minikube, check-istio, Install_Istio, Deploy_BookInfo]
+    needs: [setup-minikube, check-istio, Install_Istio]
     steps:
       - name: Check Infrastructure
         shell: bash
