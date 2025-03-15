@@ -159,18 +159,21 @@ jobs:
           minikube version
           echo "istioctl x precheck:"
           istioctl x precheck
-
   security-scan:
     name: Trivy Security Scanning
     runs-on: self-hosted
     needs: [setup-minikube, infra-check]
     steps:
-      - name: Install Trivy
+      - name: Check if Trivy is Installed
         shell: bash
         run: |
-          sudo apt-get install wget
-          wget https://github.com/aquasecurity/trivy/releases/download/v0.44.1/trivy_0.44.1_Linux-64bit.deb
-          sudo dpkg -i trivy_0.44.1_Linux-64bit.deb
+          if ! command -v trivy &> /dev/null; then
+            echo "Trivy is not installed. Installing Trivy..."
+            wget https://github.com/aquasecurity/trivy/releases/download/v0.44.1/trivy_0.44.1_Linux-64bit.deb
+            sudo dpkg -i trivy_0.44.1_Linux-64bit.deb
+          else
+            echo "Trivy is already installed."
+          fi
 
       - name: Scan BookInfo Images
         run: |
