@@ -212,10 +212,16 @@ jobs:
     steps:
       - name: Verify Gateway & BookInfo Deployment
         run: |
-          echo "Productpage : http://${MINIKUBE_IP}/productpage"
+
           kubectl get gateway -n default
           kubectl get virtualservice -n default
           kubectl get pods -n default
+
+          export INGRESS_HOST=$(minikube ip)
+          export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
+          export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
+          echo "http://$GATEWAY_URL/productpage"
+          
   run-tests:
     name: Run Tests
     runs-on: self-hosted
@@ -224,7 +230,7 @@ jobs:
       - name: Run Integration Tests
         run: |
           # Add commands to run your tests here
-          echo "Productpage : http://${MINIKUBE_IP}/productpage"
+          echo "Productpage : http://${MINIKUBE_IP}:/productpage"
           echo "Running integration tests..."
 
   notify:
