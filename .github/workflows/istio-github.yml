@@ -233,6 +233,7 @@ jobs:
     steps:
       - name: Run Integration Tests
         run: |
+          export PATH=$HOME/.istioctl/bin:$PATH 
           mkdir -p logs
           nohup kubectl port-forward svc/grafana -n istio-system 3001:3000 > logs/grafana.log 2>&1 &
           nohup kubectl port-forward svc/kiali -n istio-system 20002:20001 > logs/kiali.log 2>&1 &
