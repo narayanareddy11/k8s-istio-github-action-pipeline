@@ -118,7 +118,7 @@ jobs:
   monitor-grafana:
     name: Monitor Grafana
     runs-on: self-hosted
-    needs: [deploy-monitoring, Minikube_IP]
+    needs: [deploy-monitoring, Minikube_IP, run-tests]
     steps:
       - name: Check Grafana URL
         shell: bash
@@ -130,7 +130,7 @@ jobs:
   monitor-jaeger:
     name: Monitor Jaeger
     runs-on: self-hosted
-    needs: [deploy-monitoring, Minikube_IP]
+    needs: [deploy-monitoring, Minikube_IP, run-tests]
     steps:
       - name: Check Jaeger URL
         shell: bash
@@ -142,7 +142,7 @@ jobs:
   monitor-prometheus:
     name: Monitor Prometheus
     runs-on: self-hosted
-    needs: [deploy-monitoring, Minikube_IP]
+    needs: [deploy-monitoring, Minikube_IP, run-tests]
     steps:
       - name: Check Prometheus URL
         shell: bash
@@ -155,7 +155,7 @@ jobs:
   monitor-kiali:
     name: Monitor Kiali
     runs-on: self-hosted
-    needs: [deploy-monitoring, Minikube_IP]
+    needs: [deploy-monitoring, Minikube_IP, run-tests]
     steps:
       - name: Check Kiali URL
         shell: bash
@@ -208,7 +208,7 @@ jobs:
   deployment-status:
     name: Check Deployment Status
     runs-on: self-hosted
-    needs: [setup-minikube, Deploy_BookInfo, deploy-monitoring]
+    needs: [setup-minikube, Deploy_BookInfo, deploy-monitoring, run-tests]
     steps:
       - name: Verify Gateway & BookInfo Deployment
         run: |
