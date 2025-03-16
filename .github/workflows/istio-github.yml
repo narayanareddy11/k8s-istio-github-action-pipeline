@@ -24,8 +24,8 @@ jobs:
             #minikube delete
             #minikube start --cpus=4 --memory=8192 --kubernetes-version=v1.30.0 --driver=virtualbox
             #minikube start --cpus=4 --memory=8192 --disk-size=50g --kubernetes-version=v1.32.0 --driver=virtualbox
-            minikube start --kubernetes-version=v1.32.0
-            minikube start 
+            minikube start
+           
           else
             echo "Minikube is already running."
           fi
