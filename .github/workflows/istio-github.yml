@@ -32,7 +32,7 @@ jobs:
   
   istioctl_install:
     runs-on: self-hosted
-    needs: [cleanup, setup-minikube]
+    needs: [cleanup]
     steps:
       - name: Check if Istio is Installed
         shell: bash
