@@ -84,7 +84,7 @@ jobs:
           kubectl label namespace default istio-injection=enabled
           kubectl apply -f bookinfo.yaml
           kubectl apply -f bookinfo-gateway.yaml
-          kubectl rollout status deployment/productpage-v1 -n default --timeout=120s
+          kubectl rollout status deployment/productpage-v1 -n default 
 
   check-istio:
     name: Check Istio Status
@@ -106,9 +106,9 @@ jobs:
         run: |
           kubectl get namespace istio-system || kubectl create namespace istio-system
           kubectl apply -f moniter/
-          kubectl rollout status deployment/grafana -n istio-system --timeout=120s
-          kubectl rollout status deployment/prometheus -n istio-system --timeout=120s
-          kubectl rollout status deployment/kiali -n istio-system --timeout=120s
+          kubectl rollout status deployment/grafana -n istio-system 
+          kubectl rollout status deployment/prometheus -n istio-system 
+          kubectl rollout status deployment/kiali -n istio-system 
 
           export INGRESS_HOST=$(minikube ip)
           export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
@@ -234,9 +234,9 @@ jobs:
           nohup kubectl port-forward svc/kiali -n istio-system 20002:20001 > logs/kiali.log 2>&1 &
           nohup kubectl port-forward svc/jaeger-collector -n istio-system 14269:14268 > logs/jaeger.log 2>&1 &
           nohup kubectl port-forward svc/zipkin -n istio-system 9412:9411 > logs/zipkin.log 2>&1 &
-          echo "✅ All dashboards port-forwarded in background"
+          echo "All dashboards port-forwarded in background"
 
-          echo "📡 Checking access to Grafana, Kiali, Jaeger, and Zipkin..."
+          echo "Checking access to Grafana, Kiali, Jaeger, and Zipkin..."
           curl -s http://localhost:3001 | grep -i grafana || echo "❌ Grafana access failed"
           curl -s http://localhost:20002 | grep -i kiali || echo "❌ Kiali access failed"
           curl -s http://localhost:14269 || echo "❌ Jaeger access failed"
