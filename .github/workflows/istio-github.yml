@@ -9,7 +9,7 @@ env:
   MINIKUBE_IP: $(minikube ip)
 
 jobs:
-  setup-minikube:
+  MiniKube_Setup:
     name: Setup Minikube & Istio
     runs-on: self-hosted
     needs: [cleanup]
@@ -23,7 +23,8 @@ jobs:
             echo "Starting Minikube..."
             #minikube delete
             #minikube start --cpus=4 --memory=8192 --kubernetes-version=v1.30.0 --driver=virtualbox
-            minikube start --cpus=4 --memory=8192 --disk-size=50g --kubernetes-version=v1.28.3 --driver=virtualbox
+            #minikube start --cpus=4 --memory=8192 --disk-size=50g --kubernetes-version=v1.32.0 --driver=virtualbox
+            minikube start --kubernetes-version=v1.32.0
             #minikube start 
           else
             echo "Minikube is already running."
@@ -32,7 +33,7 @@ jobs:
   
   istioctl_install:
     runs-on: self-hosted
-    needs: [cleanup]
+    needs: [cleanup, MiniKube_Setup]
     steps:
       - name: Check if Istio is Installed
         shell: bash
@@ -40,6 +41,7 @@ jobs:
           if istioctl x precheck; then
             echo "Istio is already installed."
           else
+            minikube status
             echo "Istio is not installed. Installing Istio..."
             curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.25.0 sh -
             export PATH=$HOME/.istioctl/bin:$PATH
@@ -53,7 +55,7 @@ jobs:
 
   Minikube_IP:
     runs-on: self-hosted
-    needs: setup-minikube
+    needs: istioctl_install
     steps:
       - name: Get Minikube IP
         shell: bash
@@ -64,7 +66,7 @@ jobs:
 
   Install_Istio:
     runs-on: self-hosted
-    needs: setup-minikube
+    needs: istioctl_install
     steps:
       - name: Check if Istio version
         shell: bash
@@ -79,7 +81,7 @@ jobs:
 
   Deploy_BookInfo:
     runs-on: self-hosted
-    needs: [setup-minikube,check-istio, Install_Istio,check-istio, Minikube_IP, Install_Istio, infra-check]
+    needs: [istioctl_install,check-istio, Install_Istio,check-istio, Minikube_IP, Install_Istio, infra-check]
     steps:
       - name: Deploy BookInfo App
         run: |
@@ -91,7 +93,7 @@ jobs:
   check-istio:
     name: Check Istio Status
     runs-on: self-hosted
-    needs: setup-minikube
+    needs: istioctl_install
     steps:
       - name: Verify Istio Installation
         shell: bash
@@ -169,7 +171,7 @@ jobs:
   infra-check:
     name: Infrastructure Check
     runs-on: self-hosted
-    needs: [setup-minikube]
+    needs: [istioctl_install]
     steps:
       - name: Check Infrastructure
         shell: bash
@@ -186,7 +188,7 @@ jobs:
   security-scan:
     name: Trivy Security Scanning
     runs-on: self-hosted
-    needs: [setup-minikube]
+    needs: [istioctl_install]
     steps:
       - name: Check if Trivy is Installed
         shell: bash
@@ -210,7 +212,7 @@ jobs:
   deployment-status:
     name: Check Deployment Status
     runs-on: self-hosted
-    needs: [setup-minikube, Deploy_BookInfo, deploy-monitoring, run-tests]
+    needs: [istioctl_install, Deploy_BookInfo, deploy-monitoring, run-tests]
     steps:
       - name: Verify Gateway & BookInfo Deployment
         run: |
