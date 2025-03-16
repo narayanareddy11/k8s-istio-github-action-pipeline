@@ -28,6 +28,12 @@ jobs:
           else
             echo "Minikube is already running."
           fi
+
+  
+  istioctl_install:
+    runs-on: self-hosted
+    needs: [cleanup, setup-minikube]
+    steps:
       - name: Check if Istio is Installed
         shell: bash
         run: |
@@ -37,13 +43,9 @@ jobs:
             echo "Istio is not installed. Installing Istio..."
             curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.25.0 sh -
             export PATH=$HOME/.istioctl/bin:$PATH
-      
+
             istioctl install --set profile=demo -y
             kubectl label namespace default istio-injection=enabled
-
-
-
-
             echo "****************  http://$GATEWAY_URL/productpage   ********************"
             istioctl x precheck
 
