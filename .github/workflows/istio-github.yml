@@ -221,9 +221,9 @@ jobs:
           export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
           export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
           echo "http://$GATEWAY_URL/productpage"
-          
+
   run-tests:
-    name: Run Tests
+    name: Run Tests-Port-forward
     runs-on: self-hosted
     needs: [Deploy_BookInfo, Minikube_IP, infra-check, security-scan]
     steps:
@@ -232,6 +232,24 @@ jobs:
           # Add commands to run your tests here
           echo "Productpage : http://${MINIKUBE_IP}:/productpage"
           echo "Running integration tests..."
+          nohup kubectl port-forward svc/grafana -n istio-system 3001:3000 > grafana.log 2>&1 &
+          nohup kubectl port-forward svc/prometheus -n istio-system 9091:9090 > prometheus.log 2>&1 &
+          nohup kubectl port-forward svc/kiali -n istio-system 20002:20001 > kiali.log 2>&1 &
+          nohup kubectl port-forward svc/jaeger-collector -n istio-system 14269:14268 > jaeger.log 2>&1 &
+          echo "All dashboards port-forwarded in background"
+          
+          echo " Checking Grafana Dashboard..."
+          curl -s http://localhost:3001 | grep -i "grafana" || echo "Grafana not accessible yet"
+          
+          echo "Checking Prometheus Dashboard..."
+          curl -s http://localhost:9091 | grep -i "prometheus" || echo "Prometheus not accessible yet"
+          
+          echo "Checking Kiali Dashboard..."
+          curl -s http://localhost:20002 | grep -i "kiali" || echo "Kiali not accessible yet"
+          
+          echo "Checking Jaeger Dashboard..."
+          curl -s http://localhost:14269 | grep -i "jaeger" || echo "Jaeger not accessible yet"
+
 
   notify:
     name: Email Notify Team
