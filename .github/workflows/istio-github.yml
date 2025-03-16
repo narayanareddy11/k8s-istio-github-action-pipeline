@@ -225,7 +225,7 @@ jobs:
   run-tests:
     name: Run Tests-Port-forward
     runs-on: self-hosted
-    needs: [Deploy_BookInfo, Minikube_IP, infra-check, security-scan]
+    needs: [Deploy_BookInfo, Minikube_IP, infra-check, security-scan,deploy-monitoring]
     steps:
       - name: Run Integration Tests
         run: |
@@ -237,7 +237,7 @@ jobs:
           nohup kubectl port-forward svc/kiali -n istio-system 20002:20001 > kiali.log 2>&1 &
           nohup kubectl port-forward svc/jaeger-collector -n istio-system 14269:14268 > jaeger.log 2>&1 &
           echo "All dashboards port-forwarded in background"
-          
+
           echo " Checking Grafana Dashboard..."
           curl -s http://localhost:3001 | grep -i "grafana" || echo "Grafana not accessible yet"
           
