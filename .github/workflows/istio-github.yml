@@ -279,6 +279,7 @@ jobs:
             minikube start --kubernetes-version=v1.32.0
             #minikube start 
           else
+            minikube start 
             echo "Minikube is already running."
             kubectl delete all --all --namespace=default
             kubectl delete all --all -n istio-system
