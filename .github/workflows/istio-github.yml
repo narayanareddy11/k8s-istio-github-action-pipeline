@@ -175,7 +175,7 @@ jobs:
         run: |
           export PATH=$HOME/.istioctl/bin:$PATH 
           cat logs/jaeger-dashboard.log || echo "No jaeger log"
-          
+
   infra-check:
     name: Infrastructure Check
     runs-on: self-hosted
@@ -321,13 +321,22 @@ jobs:
         run: |
           export MINIKUBE_IP=$(minikube ip)
           echo "BookInfo Deployment Successfully Completed!"
-          echo "Grafana URL: http://localhost:3000"
-          echo "Prometheus URL: http://localhost:9090"
-          echo "Kiali URL: http://localhost:20001"
-          echo "JAEGER_URL: http://localhost:16686"
           export INGRESS_HOST=$(minikube ip)
           export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
           export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
+          echo "==== BookInfo app  ==== "
           echo "http://$GATEWAY_URL/productpage"
+          echo "==== ============= ==== "
+           
+          echo "==== Grafana Dashboard Log ===="
+          cat logs/grafana-dashboard.log || echo "No grafana log"
+          echo "==== Kiali Dashboard Log ===="
+          cat logs/kiali-dashboard.log || echo "No kiali log"
+          echo "==== Prometheus Dashboard Log ===="
+          cat logs/prometheus-dashboard.log || echo "No prometheus log"
+          echo "==== Jaeger Dashboard Log ===="
+          cat logs/jaeger-dashboard.log || echo "No jaeger log"
+          echo "==== Zipkin Dashboard Log ===="
+          cat logs/zipkin-dashboard.log || echo "No zipkin log"
 
 

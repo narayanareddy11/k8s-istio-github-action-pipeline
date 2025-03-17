@@ -1,9 +1,7 @@
 
-# 🚀 BookInfo CI/CD Pipeline with Istio on Minikube
+# BookInfo CI/CD with Istio
 
-This repository contains a robust CI/CD pipeline built using **GitHub Actions** to automate the deployment of the **BookInfo application** on **Minikube with Istio service mesh**, integrated with **monitoring tools (Grafana, Prometheus, Kiali, Jaeger, Zipkin)** and **security scanning (Trivy)**.
-
----
+This guide outlines the steps to set up a CI/CD pipeline for deploying the BookInfo application with Istio using GitHub Actions. The pipeline leverages Minikube, Istio, and monitoring tools such as Grafana, Prometheus, Zipkin and Kiali.
 
 📷 Screenshots (Optional)
 You can add screenshots of:
@@ -21,20 +19,17 @@ Zipkin :
 
 Prometheus:
 
+## Overview
+The **Bookinfo** application consists of multiple microservices demonstrating Istio's capabilities, including traffic routing, observability, and security enforcement. It includes:
+- **Productpage** (User-facing service)
+- **Details** (Provides book details)
+- **Reviews** (Multiple versions exist, one uses ratings)
+- **Ratings** (Provides book ratings)
 
-## 📑 Workflow Overview
+# 🚀 BookInfo CI/CD Pipeline with Istio on Minikube
 
-### Main Features:
-- Minikube setup and validation
-- Istio installation and configuration
-- BookInfo application deployment
-- Monitoring stack deployment (Grafana, Prometheus, Kiali, Jaeger, Zipkin)
-- Security scanning using Trivy
-- Integration and deployment tests
-- Email notification
-- Final cleanup and deployment summary
+This repository contains a robust CI/CD pipeline built using **GitHub Actions** to automate the deployment of the **BookInfo application** on **Minikube with Istio service mesh**, integrated with **monitoring tools (Grafana, Prometheus, Kiali, Jaeger, Zipkin)** and **security scanning (Trivy)**.
 
----
 
 ## 🧭 Pipeline Stages
 
@@ -57,89 +52,79 @@ Prometheus:
 | **deploy** | Final output with endpoint links |
 
 ---
+## Useful Commands
+| Action | Command |
+|--------|---------|
+| Get Minikube IP | `minikube ip` |
+| List Pods | `kubectl get pods -A` |
+| Describe a Pod | `kubectl describe pod <POD_NAME>` |
+| Check Istio Precheck | `istioctl x precheck` |
+| List Istio Services | `kubectl get svc -n istio-system` |
+| Delete Minikube Cluster | `minikube delete` |
 
-## 📂 Project Structure
 
+## Step-by-Step Guide
 
-├── .github/ │ └── workflows/ │ └── ci-cd.yaml # Main CI/CD pipeline ├── bookinfo.yaml # BookInfo microservices manifest ├── bookinfo-gateway.yaml # Istio Gateway config ├── moniter/ # Monitoring manifests (Grafana, Prometheus, etc.) ├── logs/ # Captured dashboard logs └── README.md
+### Step 1: Setup Minikube
+```bash
+minikube start --cpus=4 --memory=8192 --kubernetes-version=v1.32.0 --driver=virtualbox
+```
 
+### Step 2: Install Istio
+```bash
+curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.25.0 sh -
+export PATH=$HOME/.istioctl/bin:$PATH
+istioctl install --set profile=demo -y
+kubectl label namespace default istio-injection=enabled
+```
 
-# Bookinfo Sample
+### Step 3: Deploy BookInfo Application
+```bash
+kubectl apply -f bookinfo.yaml
+kubectl apply -f bookinfo-gateway.yaml
+kubectl rollout status deployment/productpage-v1 -n default
+```
 
-This repository contains the **Bookinfo** sample application deployed on **Istio** using **Minikube**. The setup includes a full CI/CD pipeline for deploying and monitoring the Bookinfo app with Istio, along with security scanning and infrastructure checks.
+### Step 4: Deploy Monitoring Tools
+```bash
+kubectl create namespace istio-system
+kubectl apply -f moniter/
+kubectl rollout status deployment/grafana -n istio-system
+kubectl rollout status deployment/prometheus -n istio-system
+kubectl rollout status deployment/kiali -n istio-system
+```
 
-## Overview
-The **Bookinfo** application consists of multiple microservices demonstrating Istio's capabilities, including traffic routing, observability, and security enforcement. It includes:
-- **Productpage** (User-facing service)
-- **Details** (Provides book details)
-- **Reviews** (Multiple versions exist, one uses ratings)
-- **Ratings** (Provides book ratings)
+### Step 5: Verify Deployments
+Check URLs for the following services:
+- **BookInfo Product Page:** `http://<MINIKUBE_IP>:<GATEWAY_PORT>/productpage`
+- **Grafana Dashboard:** `http://localhost:3000`
+- **Prometheus Dashboard:** `http://localhost:9090`
+- **Kiali Dashboard:** `http://localhost:20001`
+- **Jaeger Dashboard:** `http://localhost:16686`
 
-## Prerequisites
-Ensure you have the following tools installed before proceeding:
-- [Docker](https://www.docker.com/)
-- [Minikube](https://minikube.sigs.k8s.io/docs/start/)
-- [Kubectl](https://kubernetes.io/docs/tasks/tools/)
-- [Istioctl](https://istio.io/latest/docs/setup/install/)
-- [Trivy](https://aquasecurity.github.io/trivy/)
+### Step 6: Security Scan
+To scan images with Trivy:
+```bash
+trivy image istio/examples-bookinfo-productpage-v1:1.20.2
+```
 
-## Installation or automated ci/cd pipe line stages 
-Follow these steps to deploy Bookinfo with Istio:
+### Step 7: Run Tests and Port-Forwarding
+```bash
+nohup istioctl dashboard kiali > logs/kiali-dashboard.log 2>&1 &
+nohup istioctl dashboard prometheus > logs/prometheus-dashboard.log 2>&1 &
+nohup istioctl dashboard grafana > logs/grafana-dashboard.log 2>&1 &
+nohup istioctl dashboard jaeger > logs/jaeger-dashboard.log 2>&1 &
+```
 
-1. **Start Minikube**
-   ```bash
-   minikube start --cpus=4 --memory=8192 --disk-size=50g --kubernetes-version=v1.28.3 --driver=virtualbox
-   ```
-2. **Install Istio**
-   ```bash
-   curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.25.0 sh -
-   export PATH=$HOME/.istioctl/bin:$PATH
-   istioctl install --set profile=demo -y
-   ```
-3. **Deploy Bookinfo Application**
-   ```bash
-   kubectl apply -f bookinfo.yaml
-   kubectl apply -f bookinfo-gateway.yaml
-   ```
-4. **Verify Deployment**
-   ```bash
-   kubectl rollout status deployment/productpage-v1 -n default --timeout=120s
-   ```
+### Step 8: Cleanup
+To clean up resources:
+```bash
+kubectl delete all --all --namespace=default
+kubectl delete all --all -n istio-system
+```
 
-## CI/CD Pipeline
-The repository includes a **GitHub Actions** CI/CD pipeline that automates:
-- Minikube & Istio setup
-- Bookinfo app deployment
-- Infrastructure verification
-- Security scanning with **Trivy**
-- Monitoring setup (Grafana, Prometheus, Kiali)
-- Cleanup & notifications
+---
 
-### Workflow Structure
-#### 1. **Setup & Deployment**
-- Minikube starts, and Istio is installed.
-- Bookinfo application is deployed.
-
-#### 2. **Monitoring & Security**
-- **Grafana, Prometheus, and Kiali** are deployed.
-- Security scanning is conducted with Trivy.
-
-#### 3. **Validation & Testing**
-- Infrastructure checks are performed.
-- Application tests are run.
-
-#### 4. **Notification & Cleanup**
-- Status notifications are sent.
-- Resources are cleaned up after execution.
-
-## Monitoring
-After deploying, check monitoring dashboards:
-- **Grafana**: `http://<MINIKUBE_IP>:3000`
-- **Prometheus**: `http://<MINIKUBE_IP>:9090`
-- **Kiali**: `http://<MINIKUBE_IP>:20001`
-
-## Testing
-Once all pods are running, validate the application using CLI or browser.
 
 ### Check Running Pods
 ```bash
@@ -175,15 +160,5 @@ To clean up the deployed resources, run:
 ```bash
 kubectl delete all --all --namespace=default
 ```
-
-## Useful Commands
-| Action | Command |
-|--------|---------|
-| Get Minikube IP | `minikube ip` |
-| List Pods | `kubectl get pods -A` |
-| Describe a Pod | `kubectl describe pod <POD_NAME>` |
-| Check Istio Precheck | `istioctl x precheck` |
-| List Istio Services | `kubectl get svc -n istio-system` |
-| Delete Minikube Cluster | `minikube delete` |
 
 
