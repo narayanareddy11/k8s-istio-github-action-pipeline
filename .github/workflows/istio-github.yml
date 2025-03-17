@@ -241,6 +241,8 @@ jobs:
           nohup kubectl port-forward svc/zipkin -n istio-system 9412:9411 > logs/zipkin.log 2>&1 &
           echo "All dashboards port-forwarded in background"
 
+          echo "istioctl x precheck:"
+          istioctl x precheck
           echo "Checking access to Grafana, Kiali, Jaeger, and Zipkin..."
           curl -s http://localhost:3001 | grep -i grafana || echo "❌ Grafana access failed"
           curl -s http://localhost:20002 | grep -i kiali || echo "❌ Kiali access failed"
