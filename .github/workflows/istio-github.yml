@@ -130,7 +130,6 @@ jobs:
         shell: bash
         run: |
           export PATH=$HOME/.istioctl/bin:$PATH 
-          export BROWSER=none
           cat logs/grafana-dashboard.log || echo "No grafana log"
   monitor-jaeger:
     name: Monitor Jaeger
@@ -141,7 +140,6 @@ jobs:
         shell: bash
         run: |
           export PATH=$HOME/.istioctl/bin:$PATH 
-          export BROWSER=none
           cat logs/jaeger-dashboard.log || echo "No jaeger log"
 
   monitor-prometheus:
@@ -153,7 +151,6 @@ jobs:
         shell: bash
         run: |
           export PATH=$HOME/.istioctl/bin:$PATH 
-          export BROWSER=none
           cat logs/prometheus-dashboard.log || echo "No prometheus log"
 
   monitor-kiali:
@@ -165,10 +162,20 @@ jobs:
         shell: bash
         run: |
           export PATH=$HOME/.istioctl/bin:$PATH 
-          export BROWSER=none
           cat logs/kiali-dashboard.log || echo "No kiali log"
          # curl -s --head --fail "$KIALI_URL" || exit 1
 
+  monitor-jager:
+    name: Monitor Jaeger
+    runs-on: self-hosted
+    needs: [deploy-monitoring, Minikube_IP, run-tests]
+    steps:
+      - name: Check Jaeger URL
+        shell: bash
+        run: |
+          export PATH=$HOME/.istioctl/bin:$PATH 
+          cat logs/jaeger-dashboard.log || echo "No jaeger log"
+          
   infra-check:
     name: Infrastructure Check
     runs-on: self-hosted

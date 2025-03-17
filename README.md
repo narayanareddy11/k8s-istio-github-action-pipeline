@@ -5,6 +5,23 @@ This repository contains a robust CI/CD pipeline built using **GitHub Actions** 
 
 ---
 
+📷 Screenshots (Optional)
+You can add screenshots of:
+ci-cd stages: 
+
+BookInfo app:
+
+Grafana dashboards:
+
+Kiali Service Mesh view:
+
+Jaeger traces:
+
+Zipkin :
+
+Prometheus:
+
+
 ## 📑 Workflow Overview
 
 ### Main Features:
@@ -44,7 +61,7 @@ This repository contains a robust CI/CD pipeline built using **GitHub Actions** 
 ## 📂 Project Structure
 
 
-
+├── .github/ │ └── workflows/ │ └── ci-cd.yaml # Main CI/CD pipeline ├── bookinfo.yaml # BookInfo microservices manifest ├── bookinfo-gateway.yaml # Istio Gateway config ├── moniter/ # Monitoring manifests (Grafana, Prometheus, etc.) ├── logs/ # Captured dashboard logs └── README.md
 
 
 # Bookinfo Sample
