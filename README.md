@@ -6,7 +6,7 @@ This repository contains a robust CI/CD pipeline built using **GitHub Actions** 
 You can add screenshots of:
 
 ![CI/CD Pipeline Overview](images/ci-cd.png)
-BookInfo app:
+![BookInfo App](images/app.png)
 
 Grafana dashboards:
 
