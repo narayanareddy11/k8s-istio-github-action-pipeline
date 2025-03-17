@@ -1,12 +1,11 @@
+# 🚀 BookInfo CI/CD Pipeline with Istio on Minikube
 
-# BookInfo CI/CD with Istio
-
-This guide outlines the steps to set up a CI/CD pipeline for deploying the BookInfo application with Istio using GitHub Actions. The pipeline leverages Minikube, Istio, and monitoring tools such as Grafana, Prometheus, Zipkin and Kiali.
+This repository contains a robust CI/CD pipeline built using **GitHub Actions** to automate the deployment of the **BookInfo application** on **Minikube with Istio service mesh**, integrated with **monitoring tools (Grafana, Prometheus, Kiali, Jaeger, Zipkin)** and **security scanning (Trivy)**.
 
 📷 Screenshots (Optional)
 You can add screenshots of:
-ci-cd stages: 
 
+![CI/CD Pipeline Overview](images/ci-cd.png)
 BookInfo app:
 
 Grafana dashboards:
@@ -25,10 +24,6 @@ The **Bookinfo** application consists of multiple microservices demonstrating Is
 - **Details** (Provides book details)
 - **Reviews** (Multiple versions exist, one uses ratings)
 - **Ratings** (Provides book ratings)
-
-# 🚀 BookInfo CI/CD Pipeline with Istio on Minikube
-
-This repository contains a robust CI/CD pipeline built using **GitHub Actions** to automate the deployment of the **BookInfo application** on **Minikube with Istio service mesh**, integrated with **monitoring tools (Grafana, Prometheus, Kiali, Jaeger, Zipkin)** and **security scanning (Trivy)**.
 
 
 ## 🧭 Pipeline Stages

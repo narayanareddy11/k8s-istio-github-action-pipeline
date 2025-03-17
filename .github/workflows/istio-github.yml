@@ -9,10 +9,9 @@ env:
   MINIKUBE_IP: $(minikube ip)
 
 jobs:
-  MiniKube_Setup:
-    name: Setup Minikube & Istio
+  MiniKube_Setup :
+    name: Setup Minikube & clean up 
     runs-on: self-hosted
-    needs: [cleanup]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -28,12 +27,14 @@ jobs:
            
           else
             echo "Minikube is already running."
+            kubectl delete all --all --namespace=default
+            kubectl delete all --all -n istio-system
           fi
 
   
   istioctl_install:
     runs-on: self-hosted
-    needs: [cleanup, MiniKube_Setup]
+    needs: [MiniKube_Setup]
     steps:
       - name: Check if Istio is Installed
         shell: bash
@@ -293,33 +294,10 @@ jobs:
           echo "==== ============= ==== "
 
 
-  cleanup:
-    name: Cleanup Resources
-    runs-on: self-hosted
-
-    if: always()
-    steps:
-
-      - name: Start Minikube
-        run: |
-          if ! minikube status; then
-            echo "Starting Minikube..."
-            #minikube delete
-            #minikube start --cpus=4 --memory=8192 --kubernetes-version=v1.30.0 --driver=virtualbox
-            minikube start --kubernetes-version=v1.32.0
-            #minikube start 
-          else
-            minikube start 
-            echo "Minikube is already running."
-            kubectl delete all --all --namespace=default
-            kubectl delete all --all -n istio-system
-
-          fi
-
   deploy:
     name: Final Deployment Step
     runs-on: self-hosted
-    needs: [notify, cleanup]
+    needs: [notify]
     steps:
       - name: Display Deployment URLs
         shell: bash
