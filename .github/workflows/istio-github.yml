@@ -235,11 +235,7 @@ jobs:
       - name: Run Integration Tests
         run: |
           export PATH=$HOME/.istioctl/bin:$PATH 
-          mkdir -p logs
           export BROWSER=none
-
-
-
           nohup istioctl dashboard kiali > logs/kiali-dashboard.log 2>&1 &
           sleep 5
           nohup istioctl dashboard prometheus > logs/prometheus-dashboard.log 2>&1 &
