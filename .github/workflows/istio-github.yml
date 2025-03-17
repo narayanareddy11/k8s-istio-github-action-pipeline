@@ -236,9 +236,6 @@ jobs:
           export PATH=$HOME/.istioctl/bin:$PATH 
           mkdir -p logs
           export BROWSER=none
-
-
-# Run Istio dashboards in the background, redirect logs
           nohup istioctl dashboard kiali > logs/kiali-dashboard.log 2>&1 &
           nohup istioctl dashboard prometheus > logs/prometheus-dashboard.log 2>&1 &
           nohup istioctl dashboard grafana > logs/grafana-dashboard.log 2>&1 &
