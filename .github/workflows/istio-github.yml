@@ -131,7 +131,6 @@ jobs:
         run: |
           export PATH=$HOME/.istioctl/bin:$PATH 
           export BROWSER=none
-          nohup istioctl dashboard grafana > logs/grafana-dashboard.log 2>&1 &
           cat logs/grafana-dashboard.log || echo "No grafana log"
   monitor-jaeger:
     name: Monitor Jaeger
@@ -143,7 +142,6 @@ jobs:
         run: |
           export PATH=$HOME/.istioctl/bin:$PATH 
           export BROWSER=none
-          nohup istioctl dashboard jaeger > logs/jaeger-dashboard.log 2>&1 &
           cat logs/jaeger-dashboard.log || echo "No jaeger log"
 
   monitor-prometheus:
@@ -156,7 +154,6 @@ jobs:
         run: |
           export PATH=$HOME/.istioctl/bin:$PATH 
           export BROWSER=none
-          nohup istioctl dashboard prometheus > logs/prometheus-dashboard.log 2>&1 &
           cat logs/prometheus-dashboard.log || echo "No prometheus log"
 
   monitor-kiali:
@@ -169,7 +166,6 @@ jobs:
         run: |
           export PATH=$HOME/.istioctl/bin:$PATH 
           export BROWSER=none
-          nohup istioctl dashboard kiali > logs/kiali-dashboard.log 2>&1 &
           cat logs/kiali-dashboard.log || echo "No kiali log"
          # curl -s --head --fail "$KIALI_URL" || exit 1
 
@@ -245,20 +241,31 @@ jobs:
 
 
           nohup istioctl dashboard kiali > logs/kiali-dashboard.log 2>&1 &
+          sleep 5
           nohup istioctl dashboard prometheus > logs/prometheus-dashboard.log 2>&1 &
+          sleep 5
           nohup istioctl dashboard grafana > logs/grafana-dashboard.log 2>&1 &
+          sleep 5
           nohup istioctl dashboard jaeger > logs/jaeger-dashboard.log 2>&1 &
+          sleep 5
           nohup istioctl dashboard zipkin > logs/zipkin-dashboard.log 2>&1 &
+          sleep 5
           echo "All dashboards port-forwarded in background"
 
           echo "istioctl x precheck:"
           istioctl x precheck
           echo "Checking access to Grafana, Kiali, Jaeger, and Zipkin..."
-          curl -s http://localhost:3001 | grep -i grafana || echo "❌ Grafana access failed"
-          curl -s http://localhost:20002 | grep -i kiali || echo "❌ Kiali access failed"
-          curl -s http://localhost:14269 || echo "❌ Jaeger access failed"
-          curl -s http://localhost:9412 || echo "❌ Zipkin access failed"
-
+ 
+          echo "==== Grafana Dashboard Log ===="
+          cat logs/grafana-dashboard.log || echo "No grafana log"
+          echo "==== Kiali Dashboard Log ===="
+          cat logs/kiali-dashboard.log || echo "No kiali log"
+          echo "==== Prometheus Dashboard Log ===="
+          cat logs/prometheus-dashboard.log || echo "No prometheus log"
+          echo "==== Jaeger Dashboard Log ===="
+          cat logs/jaeger-dashboard.log || echo "No jaeger log"
+          echo "==== Zipkin Dashboard Log ===="
+          cat logs/zipkin-dashboard.log || echo "No zipkin log"
 
   notify:
     name: Email Notify Team
