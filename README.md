@@ -1,17 +1,55 @@
+
+# 🚀 BookInfo CI/CD Pipeline with Istio on Minikube
+
+This repository contains a robust CI/CD pipeline built using **GitHub Actions** to automate the deployment of the **BookInfo application** on **Minikube with Istio service mesh**, integrated with **monitoring tools (Grafana, Prometheus, Kiali, Jaeger, Zipkin)** and **security scanning (Trivy)**.
+
+---
+
+## 📑 Workflow Overview
+
+### Main Features:
+- Minikube setup and validation
+- Istio installation and configuration
+- BookInfo application deployment
+- Monitoring stack deployment (Grafana, Prometheus, Kiali, Jaeger, Zipkin)
+- Security scanning using Trivy
+- Integration and deployment tests
+- Email notification
+- Final cleanup and deployment summary
+
+---
+
+## 🧭 Pipeline Stages
+
+| Stage | Description |
+|-------|-------------|
+| **MiniKube_Setup** | Start or resume Minikube cluster |
+| **istioctl_install** | Install Istio CLI and perform prechecks |
+| **Minikube_IP** | Fetch and display Minikube IP address |
+| **Install_Istio** | Install Istio in demo profile and enable injection |
+| **Deploy_BookInfo** | Deploy BookInfo application and gateway |
+| **check-istio** | Verify Istio setup status |
+| **infra-check** | Validate Kubernetes, Minikube, and Istio status |
+| **deploy-monitoring** | Deploy monitoring tools in `istio-system` namespace |
+| **monitor-[tools]** | Collect dashboard URLs and logs for tools |
+| **security-scan** | Perform Trivy scans on BookInfo container images |
+| **run-tests** | Port-forward dashboards and verify access logs |
+| **deployment-status** | Check app status and gateway URL |
+| **notify** | Send email summary and job status |
+| **cleanup** | Clean up previous resources |
+| **deploy** | Final output with endpoint links |
+
+---
+
+## 📂 Project Structure
+
+
+
+
+
 # Bookinfo Sample
 
 This repository contains the **Bookinfo** sample application deployed on **Istio** using **Minikube**. The setup includes a full CI/CD pipeline for deploying and monitoring the Bookinfo app with Istio, along with security scanning and infrastructure checks.
-
-## Table of Contents
-- [Overview](#overview)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [CI/CD Pipeline](#cicd-pipeline)
-- [Monitoring](#monitoring)
-- [Testing](#testing)
-- [Cleanup](#cleanup)
-- [Useful Commands](#useful-commands)
-
 
 ## Overview
 The **Bookinfo** application consists of multiple microservices demonstrating Istio's capabilities, including traffic routing, observability, and security enforcement. It includes:
@@ -28,7 +66,7 @@ Ensure you have the following tools installed before proceeding:
 - [Istioctl](https://istio.io/latest/docs/setup/install/)
 - [Trivy](https://aquasecurity.github.io/trivy/)
 
-## Installation
+## Installation or automated ci/cd pipe line stages 
 Follow these steps to deploy Bookinfo with Istio:
 
 1. **Start Minikube**
@@ -43,8 +81,8 @@ Follow these steps to deploy Bookinfo with Istio:
    ```
 3. **Deploy Bookinfo Application**
    ```bash
-   kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml
-   kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml
+   kubectl apply -f bookinfo.yaml
+   kubectl apply -f bookinfo-gateway.yaml
    ```
 4. **Verify Deployment**
    ```bash
