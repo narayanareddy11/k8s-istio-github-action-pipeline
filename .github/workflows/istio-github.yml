@@ -235,10 +235,15 @@ jobs:
         run: |
           export PATH=$HOME/.istioctl/bin:$PATH 
           mkdir -p logs
-          nohup kubectl port-forward svc/grafana -n istio-system 3001:3000 > logs/grafana.log 2>&1 &
-          nohup kubectl port-forward svc/kiali -n istio-system 20002:20001 > logs/kiali.log 2>&1 &
-          nohup kubectl port-forward svc/jaeger-collector -n istio-system 14269:14268 > logs/jaeger.log 2>&1 &
-          nohup kubectl port-forward svc/zipkin -n istio-system 9412:9411 > logs/zipkin.log 2>&1 &
+          export BROWSER=none
+
+
+# Run Istio dashboards in the background, redirect logs
+          nohup istioctl dashboard kiali > logs/kiali-dashboard.log 2>&1 &
+          nohup istioctl dashboard prometheus > logs/prometheus-dashboard.log 2>&1 &
+          nohup istioctl dashboard grafana > logs/grafana-dashboard.log 2>&1 &
+          nohup istioctl dashboard jaeger > logs/jaeger-dashboard.log 2>&1 &
+          nohup istioctl dashboard zipkin > logs/zipkin-dashboard.log 2>&1 &
           echo "All dashboards port-forwarded in background"
 
           echo "istioctl x precheck:"
