@@ -99,6 +99,8 @@ jobs:
         shell: bash
         run: |  
           export PATH=$HOME/.istioctl/bin:$PATH 
+          mkdir -p logs
+          export BROWSER=none
           istioctl x precheck
 
   deploy-monitoring:
@@ -127,10 +129,10 @@ jobs:
       - name: Check Grafana URL
         shell: bash
         run: |
-          GRAFANA_URL="http://localhost:3000"
-          echo "Checking Grafana: $GRAFANA_URL"
-        #  curl -s --head --fail "$GRAFANA_URL" || exit 1
-
+          export PATH=$HOME/.istioctl/bin:$PATH 
+          export BROWSER=none
+          nohup istioctl dashboard grafana > logs/grafana-dashboard.log 2>&1 &
+          cat logs/grafana-dashboard.log || echo "No grafana log"
   monitor-jaeger:
     name: Monitor Jaeger
     runs-on: self-hosted
@@ -139,9 +141,10 @@ jobs:
       - name: Check Jaeger URL
         shell: bash
         run: |
-          JAEGER_URL="http://localhost:16686"
-          echo "Checking Jaeger: $JAEGER_URL"
-        #  curl -s --head --fail "$JAEGER_URL" || exit 1
+          export PATH=$HOME/.istioctl/bin:$PATH 
+          export BROWSER=none
+          nohup istioctl dashboard jaeger > logs/jaeger-dashboard.log 2>&1 &
+          cat logs/jaeger-dashboard.log || echo "No jaeger log"
 
   monitor-prometheus:
     name: Monitor Prometheus
@@ -151,10 +154,10 @@ jobs:
       - name: Check Prometheus URL
         shell: bash
         run: |
-
-          PROMETHEUS_URL="http://localhost:9090"
-          echo "Checking Prometheus: $PROMETHEUS_URL"
-        # curl -s --head --fail "$PROMETHEUS_URL" || exit 1
+          export PATH=$HOME/.istioctl/bin:$PATH 
+          export BROWSER=none
+          nohup istioctl dashboard prometheus > logs/prometheus-dashboard.log 2>&1 &
+          cat logs/prometheus-dashboard.log || echo "No prometheus log"
 
   monitor-kiali:
     name: Monitor Kiali
@@ -164,8 +167,10 @@ jobs:
       - name: Check Kiali URL
         shell: bash
         run: |
-          KIALI_URL="http://localhost:20001"
-          echo "Checking Kiali: $KIALI_URL"
+          export PATH=$HOME/.istioctl/bin:$PATH 
+          export BROWSER=none
+          nohup istioctl dashboard kiali > logs/kiali-dashboard.log 2>&1 &
+          cat logs/kiali-dashboard.log || echo "No kiali log"
          # curl -s --head --fail "$KIALI_URL" || exit 1
 
   infra-check:
@@ -236,6 +241,9 @@ jobs:
           export PATH=$HOME/.istioctl/bin:$PATH 
           mkdir -p logs
           export BROWSER=none
+
+
+
           nohup istioctl dashboard kiali > logs/kiali-dashboard.log 2>&1 &
           nohup istioctl dashboard prometheus > logs/prometheus-dashboard.log 2>&1 &
           nohup istioctl dashboard grafana > logs/grafana-dashboard.log 2>&1 &
