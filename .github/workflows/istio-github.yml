@@ -87,11 +87,11 @@ jobs:
 
   Deploy_BookInfo:
     runs-on: self-hosted
-    needs: [istioctl_install,check-istio, Install_Istio,check-istio, Minikube_IP, Install_Istio, infra-check]
+    needs: [istioctl_install,check-istio, Install_Istio, Minikube_IP, infra-check]
     steps:
       - name: Deploy BookInfo App
         run: |
-          kubectl label namespace default istio-injection=enabled
+          kubectl label namespace default istio-injection=enabled || echo "Namespace already labeled"
           kubectl apply -f bookinfo.yaml
           kubectl apply -f bookinfo-gateway.yaml
           kubectl rollout status deployment/productpage-v1 -n default 
