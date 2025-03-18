@@ -22,8 +22,8 @@ CI/CD Pipeline Overview
 ## architecture: 
 ![BookInfo App](images/arch.png)
 
-## Jager: 
-![jager App](images/jager.png)
+## Jaeger: 
+![jaeger App](images/jager.png)
 ## Overview
 The **Bookinfo** application consists of multiple microservices demonstrating Istio's capabilities, including traffic routing, observability, and security enforcement. It includes:
 - **Productpage** (User-facing service)
