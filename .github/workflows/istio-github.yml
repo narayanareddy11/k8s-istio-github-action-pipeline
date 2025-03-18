@@ -31,7 +31,6 @@ jobs:
             kubectl delete all --all -n istio-system
           fi
 
-  
   istioctl_install:
     runs-on: self-hosted
     needs: [MiniKube_Setup]
@@ -270,9 +269,6 @@ jobs:
           cat logs/jaeger-dashboard.log || echo "No jaeger log"
           echo "==== Zipkin Dashboard Log ===="
           cat logs/zipkin-dashboard.log || echo "No zipkin log"
-
-
-
 
   deploy:
     name: notify &Final Deployment Step
