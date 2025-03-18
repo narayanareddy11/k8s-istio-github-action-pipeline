@@ -21,6 +21,9 @@ CI/CD Pipeline Overview
 
 ## Prometheus:
 
+## BookInfo Architecture app
+![BookInfo App](images/arch.png)
+
 ## Overview
 The **Bookinfo** application consists of multiple microservices demonstrating Istio's capabilities, including traffic routing, observability, and security enforcement. It includes:
 - **Productpage** (User-facing service)
