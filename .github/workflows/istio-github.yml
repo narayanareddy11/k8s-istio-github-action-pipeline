@@ -42,7 +42,12 @@ jobs:
           if istioctl x precheck; then
             echo "Istio is already installed."
           else
-            minikube status
+            if ! minikube status; then
+              echo "Starting Minikube..."
+              minikube start
+            else
+              echo "Minikube is already running."
+            fi
             echo "Istio is not installed. Installing Istio..."
             curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.25.0 sh -
             export PATH=$HOME/.istioctl/bin:$PATH
