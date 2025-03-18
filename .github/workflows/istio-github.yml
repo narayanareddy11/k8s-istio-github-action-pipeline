@@ -244,15 +244,15 @@ jobs:
           export PATH=$HOME/.istioctl/bin:$PATH 
           export BROWSER=none
           nohup istioctl dashboard kiali > logs/kiali-dashboard.log 2>&1 &
-          sleep 5
+          sleep 10
           nohup istioctl dashboard prometheus > logs/prometheus-dashboard.log 2>&1 &
-          sleep 5
+          sleep 10
           nohup istioctl dashboard grafana > logs/grafana-dashboard.log 2>&1 &
-          sleep 5
+          sleep 10
           nohup istioctl dashboard jaeger > logs/jaeger-dashboard.log 2>&1 &
-          sleep 5
+          sleep 10
           nohup istioctl dashboard zipkin > logs/zipkin-dashboard.log 2>&1 &
-          sleep 5
+          sleep 10
           echo "All dashboards port-forwarded in background"
 
           echo "istioctl x precheck:"
