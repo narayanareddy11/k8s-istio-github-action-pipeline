@@ -2,9 +2,6 @@
 
 This repository contains a robust CI/CD pipeline built using **GitHub Actions** to automate the deployment of the **BookInfo application** on **Minikube with Istio service mesh**, integrated with **monitoring tools (Grafana, Prometheus, Kiali, Jaeger, Zipkin)** and **security scanning (Trivy)**.
 
-📷 Screenshots (Optional)
-You can add screenshots of:
-
 CI/CD Pipeline Overview
 
 ![CI/CD Pipeline Overview](images/ci-cd.png)
