@@ -5,18 +5,21 @@ This repository contains a robust CI/CD pipeline built using **GitHub Actions** 
 📷 Screenshots (Optional)
 You can add screenshots of:
 
+CI/CD Pipeline Overview
+
 ![CI/CD Pipeline Overview](images/ci-cd.png)
+## BookInfo App
 ![BookInfo App](images/app.png)
 
-Grafana dashboards:
+## Grafana dashboards:
 
-Kiali Service Mesh view:
+## Kiali Service Mesh view:
 
-Jaeger traces:
+## CI/CD Pipeline Overviewaeger traces:
 
-Zipkin :
+## Zipkin :
 
-Prometheus:
+## Prometheus:
 
 ## Overview
 The **Bookinfo** application consists of multiple microservices demonstrating Istio's capabilities, including traffic routing, observability, and security enforcement. It includes:
