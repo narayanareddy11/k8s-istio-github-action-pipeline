@@ -28,7 +28,6 @@ The **Bookinfo** application consists of multiple microservices demonstrating Is
 - **Reviews** (Multiple versions exist, one uses ratings)
 - **Ratings** (Provides book ratings)
 
-
 ## 🧭 Pipeline Stages
 
 | Stage | Description |
@@ -59,7 +58,6 @@ The **Bookinfo** application consists of multiple microservices demonstrating Is
 | Check Istio Precheck | `istioctl x precheck` |
 | List Istio Services | `kubectl get svc -n istio-system` |
 | Delete Minikube Cluster | `minikube delete` |
-
 
 ## Step-by-Step Guide
 
