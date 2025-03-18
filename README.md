@@ -8,22 +8,22 @@ You can add screenshots of:
 CI/CD Pipeline Overview
 
 ![CI/CD Pipeline Overview](images/ci-cd.png)
-## BookInfo App
-![BookInfo App](images/app.png)
-
-## Grafana dashboards:
 
 ## Kiali Service Mesh view:
+![Kiali](images/kiali.png)
+## BookInfo App
+![BookInfo Archicture](images/app.png)
 
-## CI/CD Pipeline Overviewaeger traces:
-
-## Zipkin :
+## Grafana dashboards:
+![Grafana App](images/grafana.png)
 
 ## Prometheus:
-
-## BookInfo Architecture app
+![Prometheus](images/pro.png)
+## architecture: 
 ![BookInfo App](images/arch.png)
 
+## Jager: 
+![jager App](images/jager.png)
 ## Overview
 The **Bookinfo** application consists of multiple microservices demonstrating Istio's capabilities, including traffic routing, observability, and security enforcement. It includes:
 - **Productpage** (User-facing service)
